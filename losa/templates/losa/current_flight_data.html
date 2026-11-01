@@ -1,0 +1,1046 @@
+{% extends 'losa/base.html' %}
+
+
+{% block title %}Контролирование угроз{% endblock %}
+{% block content %}
+
+<!-- Основной контент -->
+<div class="content">
+
+    <div class="flight-description">
+
+            <h2>ЗАПОЛНЕНИЕ ПОЛЕТНЫХ ДАННЫХ</h2>
+        <ul>
+            <li><a href="#crew_demografy">Демография экипажа</a></li>
+            <li><a href="#preflight_taxing">Предполетная подготовка. Выруливание на взлетную позицию </a></li>
+            <li><a href="#takeoff_climb">Взлет. Набор высоты</a></li>
+            <li><a href="#cruise">Крейсерский режим</a></li>
+            <li><a href="#descent">Снижение. Заход на посадку. Посадка и руление</a></li>
+            <li><a href="#total_mark">Оценка полета в целом</a></li>
+<!--            <li><a href="#">Контролирование ошибок</a></li>-->
+<!--            <li><a href="#">Контролирование факторов угроз</a></li>-->
+        </ul>
+<!-- Демогфия экипажа         -->
+         <div class="stage" data-stage="crew_demografy" id="crew_demografy">
+                <h3 class="stage-title">Демография экипажа</h3>
+                         <!-- Аэропорт взлета -->
+                        <div class="form-row">
+                            <label for="departure" class="form-label">Аэродром вылета</label>
+                            <div class="form-controls">
+                                <select id="departure" name="departure" required>
+                                    <option value="">Аэродром вылета</option>
+                                    <option value="SVO">Шереметьево (SVO)</option>
+                                    <option value="DME">Домодедово (DME)</option>
+                                    <option value="VKO">Внуково (VKO)</option>
+                                    <option value="LED">Пулково (LED)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Аэропорт посадки -->
+                        <div class="form-row">
+                            <label for="arrival" class="form-label">Аэродром посадки</label>
+                            <div class="form-controls">
+                                <select id="arrival" name="arrival" required>
+                                    <option value="">Аэродром посадки</option>
+                                    <option value="SVO">Шереметьево (SVO)</option>
+                                    <option value="DME">Домодедово (DME)</option>
+                                    <option value="VKO">Внуково (VKO)</option>
+                                    <option value="LED">Пулково (LED)</option>
+                                </select>
+                            </div>
+
+                        </div>
+                        <!-- Выбор самолета -->
+                        <div class="form-row">
+                            <label for="aircraft_type" class="form-label">Тип ВС</label>
+                            <div class="form-controls">
+                                <select id="aircraft_type" name="aircraft_type" required>
+                                    <option value="">Выберите тип ВС</option>
+                                    <option value="b737ng">Boeing 737NG</option>
+                                    <option value="b737cl">Boeing 737CL</option>
+
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Кто осуществляет активное управление PF -->
+                        <div class="form-row">
+                            <label for="pilot_flying" class="form-label">Управление ВС</label>
+                            <div class="form-controls">
+                                <select id="pilot_flying" name="pilot_flying" required>
+                                    <option value="">Выберите PF</option>
+                                    <option value="Captain">КВС</option>
+                                    <option value="First_officer">Второй пилот</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Информация о задержке рейса -->
+                        <div class="form-row">
+                            <label for="flight_delay" class="form-label">Задержка вылета</label>
+                            <div class="form-controls">
+                                <select id="flight_delay" name="flight_delay" required>
+                                    <option value="">Выбрать значение</option>
+                                    <option value="0-15 min">до 15 минут</option>
+                                    <option value="15-30 min">от 15 до 30 минут</option>
+                                    <option value="30-45 min">от 30 до 45 минут</option>
+                                    <option value="45-60 min">от 45 до 60 минут</option>
+                                    <option value="60-90 min">от 60 до 90 минут</option>
+                                    <option value="90-120 min">от 90 до 120 минут</option>
+                                    <option value="more than 2 h">более 2-х часов</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Аэропорт прописки КВС -->
+
+                        <div class="form-row">
+                            <label for="base_ad_capt" class="form-label">Аэропорт прописки КВС</label>
+                            <div class="form-controls">
+                                <select id="base_ad_capt" name="base_ad_capt" required>
+                                    <option value="">Выбрать из списка</option>
+                                    <option value="UNKL">UNKL</option>
+                                    <option value="UUDD">UUDD</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Аэропорт прописки 2П -->
+                        <div class="form-row">
+                            <label for="base_ad_fo" class="form-label">Аэропорт прописки 2П</label>
+                            <div class="form-controls">
+                                <select id="base_ad_fo" name="base_ad_fo" required>
+                                    <option value="">Выбрать из списка</option>
+                                    <option value="UNKL">UNKL</option>
+                                    <option value="UUDD">UUDD</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Стажи пилотов -->
+                        <div class="form-row pilot-section">
+                            <label class="form-label">Летный стаж пилотов</label>
+                            <div class="form-controls pilot-controls">
+                                <!-- КВС -->
+                                <div class="pilot-group">
+                                    <h4>КВС</h4>
+                                    <label for="captain_total_experience">Общий стаж (лет)</label>
+                                    <input id="captain_total_experience" type="number" name="captain_total_experience" min="0" step="0.5" required>
+
+                                    <label for="captain_type_experience">Стаж на данном типе ВС (лет)</label>
+                                    <input id="captain_type_experience" type="number" name="captain_type_experience" min="0" step="0.5" required>
+
+                                    <label for="captain_fmc_experience">Стаж на ВС с FMC (VNAV/LNAV)</label>
+                                    <input  id="captain_fmc_experience" type="number" name="captain_fmc_experience" min="0" step="0.5" required>
+                                </div>
+
+                                <!-- Второй пилот -->
+                                <div class="pilot-group">
+                                    <h4>Второй пилот</h4>
+                                    <label for="copilot_total_experience">Общий стаж (лет)</label>
+                                    <input id="copilot_total_experience" type="number" name="copilot_total_experience" min="0" step="0.5" required>
+
+                                    <label for="copilot_type_experience">Стаж на данном типе ВС (лет)</label>
+                                    <input id="copilot_type_experience" type="number" name="copilot_type_experience" min="0" step="0.5" required>
+
+                                    <label for="copilot_fmc_experience">Стаж на ВС с FMC (VNAV/LNAV)</label>
+                                    <input id="copilot_fmc_experience" type="number" name="copilot_fmc_experience" min="0" step="0.5" required>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Работа в составе экипажа (отметить один вариант) -->
+                        <div class="form-row">
+                            <label for="work_together" class="form-label">Работа в составе экипажа</label>
+                            <div class="form-controls">
+                                <select id="work_together" name="work_together" required>
+                                    <option value="">Выбрать один вариант</option>
+                                    <option value="first_leg">Первый LEG, совместных полетов экипажа</option>
+                                    <option value="first_day">Первый ДЕНЬ совместных полетов экипажа</option>
+                                    <option value="already_exist">Ранее экипаж летал совместно</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Дата полета -->
+                        <div class="form-row">
+                            <label for="flight_date" class="form-label">Дата вылета</label>
+                            <div class="form-controls">
+                                <input id="flight_date" type="date" name="flight_date" required>
+                            </div>
+                        </div>
+
+                        <!-- Поля этапа 1 -->
+                        <button type="button" class="form-submit" onclick="saveStage(1)">
+                            Сохранить демографию экипажа (1)
+                        </button>
+                        <!-- Кнопка отправки на сервер -->
+                        <!-- <button type="button" class="form-submit" onclick="submitToAPI()" style="margin-top: 15px;">
+                            Отправить данные на сервер
+                        </button> -->
+        </div>
+
+<!-- Предполетная подготовка. Выруливание на взлетную позицию  -->
+
+        <div class="stage" data-stage="preflight-taxing" id="preflight_taxing">
+            <h3 class="stage-title" >Предполетная подготовка. Выруливание на взлетную позицию</h3>
+
+                <div class="form-controls pilot-controls">
+                    <div class="pilot-group">
+
+                        <h4>Форма записи фактов</h4>
+                        <label for="facts_for_preflight_taxing" >ИЗЛОЖЕНИЕ ФАКТОВ<br>
+                                Факты должны быть изложены в следующем контексте:
+                                Что экипаж выполнил хорошо? Что экипаж выполнил не достаточно хорошо? Как действовал экипаж,
+                                когда сталкивался с факторами угрозы, допущенными ошибками и с неординарными событиями?
+                                Кроме того, необходимо обосновать данные Вами оценки характеристики действий экипажа.
+                        </label>
+                        <textarea id="facts_for_preflight_taxing"  class="facts" name="facts_for_preflight_taxing" required placeholder="Записать все что Вы считаете нужным"></textarea>
+
+
+                    </div>
+                </div>
+
+                <div class="form-controls pilot-controls">
+                    <div class="pilot-group">
+
+                        <h4>Критерии оценок (баллы)</h4>
+                        <table class="responsive-table">
+                            <thead>
+                                <tr>
+                                    <th data-label="1">1</th>
+                                    <th data-label="2">2</th>
+                                    <th data-label="3">3</th>
+                                    <th data-label="4">4</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th>Плохо</th>
+                                    <th>Удовлетворительно</th>
+                                    <th>Хорошо</th>
+                                    <th>Отлично</th>
+                                </tr>
+                                <tr>
+                                    <td data-label="1">Действия экипажа содержали скрытую угрозу безопасности полета</td>
+                                    <td data-label="2">Действия экипажа можно считать адекватными</td>
+                                    <td data-label="3">Действия экипажа были эффективными</td>
+                                    <td data-label="4">Действия экипажа отличаются высокой эффективностью и заслуживают внимания как пример для распространения</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+
+                    </div>
+                </div>
+
+                <div class="form-controls pilot-controls">
+                    <div class="pilot-group">
+
+                        <h4>Качественная характеристика работы экипажа с планом полета</h4>
+                        <label for="flight_plan_sop_brief">ПРЕДПОЛЕТНЫЙ ИНСТРУКТАЖ КВС ПО SOP<br> Даны четкие согласованные инструкции с тщательным разбором требуемых операций.<br>
+                                Краткие, лаконичные, отвечающие требованиям SOP. Установлены нижние допустимые значения высоты
+                        </label>
+                        <input id="flight_plan_sop_brief" type="number" name="flight_plan_sop_brief" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                        <label for="flight_plan_discussion">РАССМОТРЕНИЕ ПЛАНОВ ПОЛЕТА<br>
+                            Полетные планы и решения оглашены и приняты к исполнению.<br>
+                            Полное восприятие планов всеми членами экипажа. «Все на одной странице»
+                        </label>
+                        <input id="flight_plan_discussion" type="number" name="flight_plan_discussion" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                        <label for="load_crew_members_brief">ЗАГРУЗКА ЧЛЕНОВ ЭКИПАЖА<br>
+                            Определена роль и ответственность каждого члена экипажа в условиях нормального полета и при возникновении нештатных ситуаций.<br>
+                            Распределение загрузки доведено до сведения и принято экипажем к исполнению
+                        </label>
+                        <input id="load_crew_members_brief" type="number" name="load_crew_members_brief" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                        <label for="control_unexpected_situations">КОНТРОЛЬ НЕПРЕДВИДЕННЫХ ОБСТОЯТЕЛЬСТВ<br>
+                            Экипаж разработал эффективные стратегии по контролю угроз безопасности полета.<br>
+                            Факторы угрозы и их возможные последствия предвиделись. Использовались все имеющиеся средства и возможности для контроля за факторами угрозы
+
+                        </label>
+                        <input id="control_unexpected_situations" type="number" name="control_unexpected_situations" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+                    </div>
+                </div>
+
+                <div class="form-controls pilot-controls">
+                    <div class="pilot-group">
+                        <h4>Качественная характеристика выполнения экипажем требуемых действий</h4>
+                        <label for="coontrol_flight_instruments">КОНТРОЛЬ ПОКАЗАНИЙ ПРИБОРОВ, ПЕРЕКРЕСТНЫЙ КОНТРОЛЬ<br>
+                            Каждый член экипажа внимательно следил за работой систем ВС и контролировал действия других членов экипажа.<br>
+                            Местоположение ВС, уста-новка заданных параметров и действия экипажа проверялись
+                        </label>
+                        <input id="coontrol_flight_instruments" type="number" name="coontrol_flight_instruments" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                        <label for="load_crew_members">ЗАГРУЗКА ЧЛЕНОВ ЭКИПАЖА<br>
+                        Оперативные задачи распределялись по приоритетам и правильно ставились перед членами экипажа в соответствии с их непосредственными обязанностями.<br>
+                        Обращено внимание на отмененные полетные задания. Чрезмерная загрузка членов экипажа не предусматривалась
+                        </label>
+                        <input id="load_crew_members" type="number" name="load_crew_members" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                        <label for="attentiveness">ВНИМАТЕЛЬНОСТЬ<br>
+                            Экипаж внимательно отслеживал обстановку и положение ВС.<br>
+                            Экипаж сохранял постоянный контроль ситуации
+                        </label>
+                        <input id="attentiveness" type="number" name="attentiveness" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                        <label for="automatic_system_control">УПРАВЛЕНИЕ РАБОТОЙ АВТОМАТИЧЕСКИХ СИСТЕМ<br>
+                            Управление работой автоматических систем осуществлялась должным образом и исходя из требований, диктуемых ситуацией и/или рабочей нагрузкой на экипаж.<br>
+                            В процессе предполетного инструктажа КВС дал соответствующие указания по использованию автоматики другим членам экипажа.
+                            Экипаж владеет эффективными приемами противодействия нарушениям в работе автоматических систем
+
+                        </label>
+                        <input id="automatic_system_control" type="number" name="automatic_system_control" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                    </div>
+                </div>
+
+                <div class="form-controls pilot-controls">
+                    <div class="pilot-group">
+                        <h4>Качественная характеристика действий экипажа при рассмотрении и уточнении планов полета</h4>
+                        <label for="critical_assessment_plans">КРИТИЧЕСКАЯ ОЦЕНКА ПЛАНОВ ПОЛЕТА<br> При необходимости, существующие планы полета пересматривались и уточнялись.<br>
+                                Решения и действия экипажа анализировались путем открытого обсуждения с целью убедиться, что существующий план полета представляет собой наилучший вариант</label>
+                        <input id="critical_assessment_plans" type="number" name="critical_assessment_plans" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                        <label for="request_for_clarification">ОБРАЩЕНИЯ ЗА ПОЯСНЕНИЯМИ<br>
+                            Члены экипажа задавали вопросы чтобы уяснить и/или уточнить план действий.<br>
+                            Члены экипажа не стеснялись проявить недостаток знаний,
+                            что выражается в их отношении кплану: «Ничего не принимать как само собой разумеющееся»
+                        </label>
+                        <input id="request_for_clarification" type="number" name="request_for_clarification" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                        <label for="conviction">УБЕЖДЕННОСТЬ<br>
+                            Члены экипажа настаивали на своих критических замечаниях и/или выводах с достаточным упорством.<br>
+                            Члены экипажа высказывались без стеснения.
+                        </label>
+                        <input id="conviction" type="number" name="conviction" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+                    </div>
+                </div>
+
+            <button type="button" class="form-submit" onclick="saveStage(2)">Сохранить. Предполетная подготовка. Выруливание на взлетную позицию (2)</button>
+        </div>
+
+<!-- Взлет. Набор высоты -->
+
+        <div class="stage" data-stage="takeoff_climb" id="takeoff_climb">
+            <h3 class="stage-title" >Взлет. Набор высоты</h3>
+                <div class="form-controls pilot-controls">
+                    <div class="pilot-group">
+
+                        <h4>Форма записи фактов</h4>
+                        <label for="facts_takeoff_climb">ИЗЛОЖЕНИЕ ФАКТОВ<br>
+                                Факты должны быть изложены в следующем контексте:
+                                Что экипаж выполнил хорошо? Что экипаж выполнил не достаточно хорошо? Как действовал экипаж,
+                                когда сталкивался с факторами угрозы, допущенными ошибками и с неординарными событиями?
+                                Кроме того, необходимо обосновать данные Вами оценки характеристики действий экипажа.
+                        </label>
+                        <textarea id="facts_takeoff_climb" class="facts" name="facts_takeoff_climb" required placeholder="Записать все что Вы считаете нужным"></textarea>
+
+
+                    </div>
+                </div>
+<!-- Критерии оценок -->
+                <div class="form-controls pilot-controls">
+                    <div class="pilot-group">
+
+                        <h4>Критерии оценок (баллы)</h4>
+                        <table class="responsive-table">
+                            <thead>
+                                <tr>
+                                    <th data-label="1">1</th>
+                                    <th data-label="2">2</th>
+                                    <th data-label="3">3</th>
+                                    <th data-label="4">4</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th>Плохо</th>
+                                    <th>Удовлетворительно</th>
+                                    <th>Хорошо</th>
+                                    <th>Отлично</th>
+                                </tr>
+                                <tr>
+                                    <td data-label="1">Действия экипажа содержали скрытую угрозу безопасности полета</td>
+                                    <td data-label="2">Действия экипажа можно считать адекватными</td>
+                                    <td data-label="3">Действия экипажа были эффективными</td>
+                                    <td data-label="4">Действия экипажа отличаются высокой эффективностью и заслуживают внимания как пример для распространения</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+                <div class="form-controls pilot-controls">
+                    <div class="pilot-group">
+
+                        <h4>Качественная характеристика выполнения экипажем требуемых действий</h4>
+                        <label for="coontrol_flight_instruments_to_climb">КОНТРОЛЬ ПОКАЗАНИЙ ПРИБОРОВ. ПЕРЕКРЕСТНЫЙ КОНТРОЛЬ<br>
+                             Каждый член экипажа внимательно следил за работой систем ВС и контролировал действия других членов экипажа.<br>
+                                Местоположение ВС, установка заданных параметров и действия экипажа проверялись
+                        </label>
+                        <input id="coontrol_flight_instruments_to_climb" type="number" name="coontrol_flight_instruments_to_climb" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                        <label for="load_crew_members_to">ЗАГРУЗКА ЧЛЕНОВ ЭКИПАЖА<br>
+                            Оперативные задачи распределялись по приоритетам и правильно ставились перед членами экипажа в соответствии с их непосредственными обязанностями.<br>
+                            Обращено внимание на отмененные полетные задания. Чрезмерная загрузка членов экипажа не предусматривалась
+                        </label>
+                        <input id="load_crew_members_to" type="number" name="load_crew_members_to" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                        <label for="attentiveness_to">ВНИМАТЕЛЬНОСТЬ<br>
+                            Экипаж внимательно отслеживал обстановку и положение ВС.<br>
+                            Экипаж сохранял постоянный контроль ситуации
+                        </label>
+                        <input id="attentiveness_to" type="number" name="attentiveness_to" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                        <label for="control_auto_system_to">УПРАВЛЕНИЕ РАБОТОЙ АВТОМАТИЧЕСКИХ СИСТЕМ<br>
+                            Управление работой автоматических систем осуществлялась должным образом и исходя из требований, диктуемых ситуацией и/или рабочей нагрузкой на экипаж.<br>
+                             В процессе предполетного инструктажа КВС дал соответствующие указания по использованию автоматики другим членам экипажа.
+                            Экипаж владеет эффективными приемами противодействия нарушениям в работе автоматических систем
+
+                        </label>
+                        <input id="control_auto_system_to" type="number" name="control_auto_system_to" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+                    </div>
+                </div>
+
+
+
+                <div class="form-controls pilot-controls">
+                    <div class="pilot-group">
+                        <h4>Качественная характеристика действий экипажа при рассмотрении и уточнении планов полета</h4>
+                        <label for="critical_assessment_plans_to">КРИТИЧЕСКАЯ ОЦЕНКА ПЛАНОВ ПОЛЕТА<br> При необходимости, существующие планы полета пересматривались и уточнялись.<br>
+                                Решения и действия экипажа анализировались путем открытого обсуждения с целью убедиться, что существующий план полета представляет собой наилучший вариант</label>
+                        <input id="critical_assessment_plans_to" type="number" name="critical_assessment_plans_to" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                        <label for="request_for_clarification_to">ОБРАЩЕНИЯ ЗА ПОЯСНЕНИЯМИ<br>
+                            Члены экипажа задавали вопросы чтобы уяснить и/или уточнить план действий.<br>
+                            Члены экипажа не стеснялись проявить недостаток знаний,
+                            что выражается в их отношении кплану: «Ничего не принимать как само собой разумеющееся»
+                        </label>
+                        <input id="request_for_clarification_to" type="number" name="request_for_clarification_to" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                        <label for="conviction_to">УБЕЖДЕННОСТЬ<br>
+                            Члены экипажа настаивали на своих критических замечаниях и/или выводах с достаточным упорством.<br>
+                            Члены экипажа высказывались без стеснения.
+                        </label>
+                        <input id="conviction_to" type="number" name="conviction_to" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+                    </div>
+                </div>
+
+            <button type="button" class="form-submit" onclick="saveStage(3)">Сохранить. Взлет. Набор высоты (3)</button>
+        </div>
+
+<!-- Крейсерский полет -->
+
+        <div class="stage" data-stage="cruise" id="cruise">
+            <h3 class="stage-title">Крейсерский режим</h3>
+                <div class="form-controls pilot-controls">
+                    <div class="pilot-group">
+
+                        <h4>Форма записи фактов</h4>
+                        <label for="facts_cruise">ИЗЛОЖЕНИЕ ФАКТОВ<br>
+                                Факты должны быть изложены в следующем контексте:
+                                Что экипаж выполнил хорошо? Что экипаж выполнил не достаточно хорошо? Как действовал экипаж,
+                                когда сталкивался с факторами угрозы, допущенными ошибками и с неординарными событиями?
+                                Кроме того, необходимо обосновать данные Вами оценки характеристики действий экипажа.
+                        </label>
+                        <textarea id="facts_cruise" class="facts" name="facts_cruise" required placeholder="Записать все что Вы считаете нужным"></textarea>
+
+
+                    </div>
+                </div>
+
+            <button type="button" class="form-submit" onclick="saveStage(4)">Сохранить. Крейсерский режим (4)</button>
+        </div>
+
+<!-- Снижение. Заход на посадку. Посадка и руление -->
+
+        <div class="stage" data-stage="descent" id="descent">
+            <h3 class="stage-title" >Снижение. Заход на посадку. Посадка и руление</h3>
+
+<!-- Снижение до 10000 фт -->
+                <div class="pilot-group">
+                        <h4>Снижение до высоты 10 000 фут</h4>
+                        <div class="form-row">
+                            <label for="init_descent_brief" class="form-label">
+                            1. Был ли проведен инструктаж по выполнению маневра снижения
+                             до подхода к точке начала снижения (ТОD)?
+                            </label>
+                            <div class="form-controls">
+                                <select id="init_descent_brief" name="init_descent_brief" required>
+                                    <option value="">Выбрать</option>
+                                    <option value="Да">Да</option>
+                                    <option value="Нет">Нет</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="start_of_descent_fms" class="form-label">
+                            2. Экипаж начал снижение ранее или по команде TOD системы управления полетом (FMS)?
+                            </label>
+                            <div class="form-controls">
+                                <select id="start_of_descent_fms" name="start_of_descent_fms" required>
+                                    <option value="">Выбрать</option>
+                                    <option value="Да">По команде TOD</option>
+                                    <option value="Нет">Начал снижение ранее</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="start_of_descent_trajectory" class="form-label">
+                            3. Траектория снижения проходила значительно выше/ниже задаваемой FMS или стандартной траектории?
+                            </label>
+                            <div class="form-controls">
+                                <select id="start_of_descent_trajectory" name="start_of_descent_trajectory" required>
+                                    <option value="">Выбрать</option>
+                                    <option value="По стандарту в необходимых пределах">По стандарту в необходимых пределах</option>
+                                    <option value="Значительно выше из-за ошибки экипажа">Значительно выше из-за ошибки экипажа</option>
+                                    <option value="Значительно выше из-за ошибки ОрВД">Значительно выше из-за ошибки ОрВД</option>
+                                    <option value="Значительно выше из-за интенсивного движения ВС">Значительно выше из-за интенсивного движения ВС</option>
+                                    <option value="Значительно ниже из-за ошибки экипажа">Значительно ниже из-за ошибки экипажа</option>
+                                    <option value="Значительно ниже из-за ошибки ОрВД">Значительно ниже из-за ошибки ОрВД</option>
+                                    <option value="Значительно ниже из-за интенсивного движения ВС">Значительно ниже из-за интенсивного движения ВС</option>
+                                </select>
+                            </div>
+                        </div>
+                </div>
+
+<!-- Снижение ниже 10000 фт -->
+                <div class="pilot-group">
+                        <h4>Снижение ниже высоты 10 000 фут</h4>
+                        <div class="form-row">
+                            <label for="approach_type" class="form-label">
+                            4. Заход на посадку</label>
+                            <div class="form-controls">
+                                <select id="approach_type" name="approach_type" required>
+                                    <option value="">Выбрать один вариант</option>
+                                    <option value="Визуальный">Визуальный</option>
+                                    <option value="Визуальный с дублированием по приборам">Визуальный с дублированием по приборам</option>
+                                    <option value="По приборам ILS">По приборам ILS</option>
+                                    <option value="По приборам RNP, RNAV">По приборам RNP, RNAV</option>
+                                    <option value="По приборам LOC, VOR, DME">По приборам LOC, VOR, DME</option>
+                                    <option value="По приборам NDB">По приборам NDB</option>
+                                </select>
+                            </div>
+
+                        </div>
+
+                        <div class="form-row">
+                            <label for="type_of_control" class="form-label">
+                            5. Заход на посадку, тип управления:</label>
+                            <div class="form-controls">
+                                <select id="type_of_control" name="type_of_control" required>
+                                    <option value="">Выберите тип</option>
+                                    <option value="manual">Ручное</option>
+                                    <option value="autopilot">Автопилот</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="descent_trajectory" class="form-label">
+                            6. Траектория снижения проходила значительно выше/ниже желаемой
+                            </label>
+                            <div class="form-controls">
+                                <select id="descent_trajectory" name="descent_trajectory" required>
+                                    <option value="">Выбрать</option>
+                                    <option value="По стандарту в необходимых пределах">По стандарту в необходимых пределах</option>
+                                    <option value="Значительно выше из-за ошибки экипажа">Значительно выше из-за ошибки экипажа</option>
+                                    <option value="Значительно выше из-за ошибки ОрВД">Значительно выше из-за ошибки ОрВД</option>
+                                    <option value="Значительно выше из-за интенсивного движения ВС">Значительно выше из-за интенсивного движения ВС</option>
+                                    <option value="Значительно ниже из-за ошибки экипажа">Значительно ниже из-за ошибки экипажа</option>
+                                    <option value="Значительно ниже из-за ошибки ОрВД">Значительно ниже из-за ошибки ОрВД</option>
+                                    <option value="Значительно ниже из-за интенсивного движения ВС">Значительно ниже из-за интенсивного движения ВС</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="flap_settings" class="form-label">
+                            7. Выпуск закрылков. Был ли процесс в основном завершен на скорости:</label>
+                            <div class="form-controls">
+                                <select id="flap_settings" name="flap_settings" required>
+                                    <option value="">Выберите</option>
+                                    <option value="ниже минимальной эволютивной скорости">ниже минимальной эволютивной скорости</option>
+                                    <option value="близкой к минимальной эволютивной скорости">близкой к минимальной эволютивной скорости</option>
+                                    <option value="близкой к максимальной скорости">близкой к максимальной скорости</option>
+                                    <option value="выше максимальной для выпуска закрылков">выше максимальной для выпуска закрылков</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="weather_condition" class="form-label">
+                            8. Погодные условия</label>
+                            <div class="form-controls">
+                                <select id="weather_condition" name="weather_condition" required>
+                                    <option value="">Выбрать значение</option>
+                                    <option value="VMC">VMC</option>
+                                    <option value="IMC">IMC</option>
+                                </select>
+                            </div>
+                        </div>
+                </div>
+
+<!-- Параметры стабилизированного захода на посадку H=1500 feet -->
+                <div class="pilot-group">
+                        <h4>Параметры стабилизированного захода на посадку H=1500 футов</h4>
+                        <div class="form-row">
+                            <label for="approach_speed_1500" class="form-label">
+                            Точность выдерживания заданной воздушной скорости (от -5 до +15 от Vappr)</label>
+                            <div class="form-controls">
+                                <select id="approach_speed_1500" name="approach_speed_1500" required>
+                                    <option value="">Выбрать из списка</option>
+                                    <option value="normal">Выдерживалась</option>
+                                    <option value="abnormal">Не выдерживалась</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="rate_of_des_1500" class="form-label">Вертикальная скорость менее 1000 фут/мин</label>
+                            <div class="form-controls">
+                                <select id="rate_of_des_1500" name="rate_of_des_1500" required>
+                                    <option value="">Выбрать из списка</option>
+                                    <option value="normal">Выдерживалась</option>
+                                    <option value="abnormal">Не выдерживалась</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="engine_control_1500" class="form-label">Выдерживание требуемого режима работы двигателей</label>
+                            <div class="form-controls">
+                                <select id="engine_control_1500" name="engine_control_1500" required>
+                                    <option value="">Выбрать из списка</option>
+                                    <option value="normal">Выдерживалось</option>
+                                    <option value="abnormal">Не выдерживалось</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="landing_config_1500" class="form-label">Установка посадочной конфигурации ВС (закрылки - полностью, шасси выпущены)</label>
+                            <div class="form-controls">
+                                <select id="landing_config_1500" name="landing_config_1500" required>
+                                    <option value="">Выбрать из списка</option>
+                                    <option value="is_set">Установлена</option>
+                                    <option value="no_set">Не установлена</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="descent_on_given_trajectory_1500" class="form-label">Снижение по заданной траектории: курс, глиссада</label>
+                            <div class="form-controls">
+                                <select id="descent_on_given_trajectory_1500" name="descent_on_given_trajectory_1500" required>
+                                    <option value="">Выбрать из списка</option>
+                                    <option value="yes">Да</option>
+                                    <option value="no">Нет</option>
+                                </select>
+                            </div>
+                        </div>
+                </div>
+<!-- Параметры стабилизированного захода на посадку H=1000 feet -->
+                <div class="pilot-group">
+                        <h4>Параметры стабилизированного захода на посадку H=1000 футов</h4>
+                        <div class="form-row">
+                            <label for="approach_speed_1000" class="form-label">
+                            Точность выдерживания заданной воздушной скорости (от -5 до +15)</label>
+                            <div class="form-controls">
+                                <select id="approach_speed_1000" name="approach_speed_1000" required>
+                                    <option value="">Выбрать из списка</option>
+                                    <option value="normal">Выдерживалась</option>
+                                    <option value="abnormal">Не выдерживалась</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="rate_of_des_1000" class="form-label">Вертикальная скорость менее 1000 фут/мин</label>
+                            <div class="form-controls">
+                                <select id="rate_of_des_1000" name="rate_of_des_1000" required>
+                                    <option value="">Выбрать из списка</option>
+                                    <option value="normal">Выдерживалась</option>
+                                    <option value="abnormal">Не выдерживалась</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="engine_control_1000" class="form-label">Выдерживание требуемого режима работы двигателей</label>
+                            <div class="form-controls">
+                                <select id="engine_control_1000" name="engine_control_1000" required>
+                                    <option value="">Выбрать из списка</option>
+                                    <option value="normal">Выдерживалось</option>
+                                    <option value="abnormal">Не выдерживалось</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="landing_config_1000" class="form-label">Установка посадочной конфигурации ВС (закрылки - полностью, шасси выпущены)</label>
+                            <div class="form-controls">
+                                <select id="landing_config_1000" name="landing_config_1000" required>
+                                    <option value="">Выбрать из списка</option>
+                                    <option value="is_set">Установлена</option>
+                                    <option value="no_set">Не установлена</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="descent_on_given_trajectory_1000" class="form-label">Снижение по заданной траектории: курс, глиссада</label>
+                            <div class="form-controls">
+                                <select id="descent_on_given_trajectory_1000" name="descent_on_given_trajectory_1000" required>
+                                    <option value="">Выбрать из списка</option>
+                                    <option value="yes">Да</option>
+                                    <option value="no">Нет</option>
+                                </select>
+                            </div>
+                        </div>
+                </div>
+
+<!-- Параметры стабилизированного захода на посадку H=500 feet -->
+                <div class="pilot-group">
+                        <h4>Параметры стабилизированного захода на посадку H=500 футов</h4>
+                        <div class="form-row">
+                            <label for="approach_speed_500" class="form-label">
+                            Точность выдерживания заданной воздушной скорости (от -5 до +15)</label>
+                            <div class="form-controls">
+                                <select id="approach_speed_500" name="approach_speed_500" required>
+                                    <option value="">Выбрать из списка</option>
+                                    <option value="normal">Выдерживалась</option>
+                                    <option value="abnormal">Не выдерживалась</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="rate_of_des_500" class="form-label">Вертикальная скорость менее 1000 фут/мин</label>
+                            <div class="form-controls">
+                                <select id="rate_of_des_500" name="rate_of_des_500" required>
+                                    <option value="">Выбрать из списка</option>
+                                    <option value="normal">Выдерживалась</option>
+                                    <option value="abnormal">Не выдерживалась</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="engine_control_500" class="form-label">Выдерживание требуемого режима работы двигателей</label>
+                            <div class="form-controls">
+                                <select id="engine_control_500" name="engine_control_500" required>
+                                    <option value="">Выбрать из списка</option>
+                                    <option value="normal">Выдерживалось</option>
+                                    <option value="abnormal">Не выдерживалось</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="landing_config_500" class="form-label">Установка посадочной конфигурации ВС (закрылки - полностью, шасси выпущены)</label>
+                            <div class="form-controls">
+                                <select id="landing_config_500" name="landing_config_500" required>
+                                    <option value="">Выбрать из списка</option>
+                                    <option value="is_set">Установлена</option>
+                                    <option value="no_set">Не установлена</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="descent_on_given_trajectory_500" class="form-label">Снижение по заданной траектории: курс, глиссада</label>
+                            <div class="form-controls">
+                                <select id="descent_on_given_trajectory_500" name="descent_on_given_trajectory_500" required>
+                                    <option value="">Выбрать из списка</option>
+                                    <option value="yes">Да</option>
+                                    <option value="no">Нет</option>
+                                </select>
+                            </div>
+                        </div>
+                </div>
+
+<!-- Замечания -->
+                 <div class="pilot-group">
+
+                        <h4>Форма записи фактов</h4>
+                        <p>Продумайте замечания.
+                                 Опишите заслуживающие внимания события на этапе
+                                  от точки начала снижения до приземления с использованием
+                                   приведенных выше подпунктов для определения наземных ориентиров.
+                                    Расскажите, что предпринимал экипаж, когда сталкивался с угрожающими факторами и собственными ошибками.
+                                     Кроме того, необходими обосновать данные Вами оценки характеристики действий экипажа.</p>
+
+                        <label for="landing_brief_facts">1.	ИНСТРУКТАЖ</label>
+                        <textarea id="landing_brief_facts" class="facts" name="landing_brief_facts" required placeholder="Записать все что Вы считаете нужным"></textarea>
+
+                        <label for="top_of_descent_facts">2.	TOD</label>
+                        <textarea id="top_of_descent_facts" class="facts" name="top_of_descent_facts" required placeholder="Записать все что Вы считаете нужным"></textarea>
+
+                        <label for="trans_level_facts">3.	ВЫСОТА ПЕРЕВОДА ШКАЛЫ ДАВЛЕНИЙ</label>
+                        <textarea id="trans_level_facts" class="facts" name="trans_level_facts" required placeholder="Записать все что Вы считаете нужным"></textarea>
+
+                        <label for="10000_feet_proc_facts">4.	10 000 фут</label>
+                        <textarea id="10000_feet_proc_facts" class="facts" name="10000_feet_proc_facts" required placeholder="Записать все что Вы считаете нужным"></textarea>
+
+                        <label for="deceleration_facts">5.	СБРОС СКОРОСТИ И ИЗМЕНЕНИЕ КОНФИГУРАЦИИ ВС</label>
+                        <textarea id="deceleration_facts" class="facts" name="deceleration_facts" required placeholder="Записать все что Вы считаете нужным"></textarea>
+
+                        <label for="faf_om_facts">6.	FAF/OM</label>
+                        <textarea id="faf_om_facts" class="facts" name="faf_om_facts" required placeholder="Записать все что Вы считаете нужным"></textarea>
+
+                        <label for="compliance_basic_criteria_facts">7.	РУБЕЖ СОБЛЮДЕНИЯ БАЗОВЫХ КРИТЕРИЕВ СТАБИЛИЗИРОВАННОГО ЗАХОДА</label>
+                        <textarea id="compliance_basic_criteria_facts" class="facts" name="compliance_basic_criteria_facts" required placeholder="Записать все что Вы считаете нужным"></textarea>
+
+                        <label for="flare_touchdown_facts">8.	ВЫРАВНИВАНИЕ/КАСАНИЕ</label>
+                        <textarea id="flare_touchdown_facts" class="facts" name="flare_touchdown_facts" required placeholder="Записать все что Вы считаете нужным"></textarea>
+
+                        <label for="taxing_parking_facts">9.	РУЛЕНИЕ К МЕСТУ ОСТАНОВКИ</label>
+                        <textarea id="taxing_parking_facts" class="facts" name="taxing_parking_facts" required placeholder="Записать все что Вы считаете нужным"></textarea>
+
+                </div>
+
+<!-- Критерии оценок -->
+                    <div class="pilot-group">
+                        <h4>Критерии оценок (баллы)</h4>
+                        <table class="responsive-table">
+                            <thead>
+                                <tr>
+                                    <th data-label="1">1</th>
+                                    <th data-label="2">2</th>
+                                    <th data-label="3">3</th>
+                                    <th data-label="4">4</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th>Плохо</th>
+                                    <th>Удовлетворительно</th>
+                                    <th>Хорошо</th>
+                                    <th>Отлично</th>
+                                </tr>
+                                <tr>
+                                    <td data-label="1">Действия экипажа содержали скрытую угрозу безопасности полета</td>
+                                    <td data-label="2">Действия экипажа можно считать адекватными</td>
+                                    <td data-label="3">Действия экипажа были эффективными</td>
+                                    <td data-label="4">Действия экипажа отличаются высокой эффективностью и заслуживают внимания как пример для распространения</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+<!-- Баллы CRM заход посадка -->
+                <div class="form-controls pilot-controls">
+                    <div class="pilot-group">
+
+                        <h4>Качественная характеристика работы экипажа с планом полета</h4>
+                        <label for="flight_plan_sop_brief_landing">ПРЕДПОЛЕТНЫЙ ИНСТРУКТАЖ КВС ПО SOP<br> Даны четкие согласованные инструкции с тщательным разбором требуемых операций.<br>
+                                Краткие, лаконичные, отвечающие требованиям SOP. Установлены нижние допустимые значения высоты
+                        </label>
+                        <input id="flight_plan_sop_brief_landing" type="number" name="flight_plan_sop_brief_landing" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                        <label for="flight_plan_discussion_landing">РАССМОТРЕНИЕ ПЛАНОВ ПОЛЕТА<br>
+                            Полетные планы и решения оглашены и приняты к исполнению.<br>
+                            Полное восприятие планов всеми членами экипажа. «Все на одной странице»
+                        </label>
+                        <input id="flight_plan_discussion_landing" type="number" name="flight_plan_discussion_landing" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                        <label for="load_crew_members_brief_landing">ЗАГРУЗКА ЧЛЕНОВ ЭКИПАЖА<br>
+                            Определена роль и ответственность каждого члена экипажа в условиях нормального полета и при возникновении нештатных ситуаций.<br>
+                            Распределение загрузки доведено до сведения и принято экипажем к исполнению
+                        </label>
+                        <input id="load_crew_members_brief_landing" type="number" name="load_crew_members_brief_landing" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                        <label for="control_unexpected_situations_landing">КОНТРОЛЬ НЕПРЕДВИДЕННЫХ ОБСТОЯТЕЛЬСТВ<br>
+                            Экипаж разработал эффективные стратегии по контролю угроз безопасности полета.<br>
+                            Факторы угрозы и их возможные последствия предвиделись. Использовались все имеющиеся средства и возможности для контроля за факторами угрозы
+
+                        </label>
+                        <input id="control_unexpected_situations_landing" type="number" name="control_unexpected_situations_landing" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+                    </div>
+                </div>
+
+                <div class="form-controls pilot-controls">
+                    <div class="pilot-group">
+                        <h4>Качественная характеристика выполнения экипажем требуемых действий</h4>
+                        <label for="coontrol_flight_instruments_landing">КОНТРОЛЬ ПОКАЗАНИЙ ПРИБОРОВ, ПЕРЕКРЕСТНЫЙ КОНТРОЛЬ<br>
+                            Каждый член экипажа внимательно следил за работой систем ВС и контролировал действия других членов экипажа.<br>
+                            Местоположение ВС, уста-новка заданных параметров и действия экипажа проверялись
+                        </label>
+                        <input id="coontrol_flight_instruments_landing" type="number" name="coontrol_flight_instruments_landing" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                        <label for="load_crew_members_landing">ЗАГРУЗКА ЧЛЕНОВ ЭКИПАЖА<br>
+                        Оперативные задачи распределялись по приоритетам и правильно ставились перед членами экипажа в соответствии с их непосредственными обязанностями.<br>
+                        Обращено внимание на отмененные полетные задания. Чрезмерная загрузка членов экипажа не предусматривалась
+                        </label>
+                        <input id="load_crew_members_landing" type="number" name="load_crew_members_landing" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                        <label for="attentiveness_landing">ВНИМАТЕЛЬНОСТЬ<br>
+                            Экипаж внимательно отслеживал обстановку и положение ВС.<br>
+                            Экипаж сохранял постоянный контроль ситуации
+                        </label>
+                        <input id="attentiveness_landing" type="number" name="attentiveness_landing" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                        <label for="managing_automatic_systems_landing">УПРАВЛЕНИЕ РАБОТОЙ АВТОМАТИЧЕСКИХ СИСТЕМ<br>
+                            Управление работой автоматических систем осуществлялась должным образом и исходя из требований, диктуемых ситуацией и/или рабочей нагрузкой на экипаж.<br>
+                            В процессе предполетного инструктажа КВС дал соответствующие указания по использованию автоматики другим членам экипажа.
+                            Экипаж владеет эффективными приемами противодействия нарушениям в работе автоматических систем
+
+                        </label>
+                        <input id="managing_automatic_systems_landing" type="number" name="managing_automatic_systems_landing" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                    </div>
+                </div>
+
+                <div class="form-controls pilot-controls">
+                    <div class="pilot-group">
+                        <h4>Качественная характеристика действий экипажа при рассмотрении и уточнении планов полета</h4>
+                        <label for="critical_assessment_plans_landing">КРИТИЧЕСКАЯ ОЦЕНКА ПЛАНОВ ПОЛЕТА<br> При необходимости, существующие планы полета пересматривались и уточнялись.<br>
+                                Решения и действия экипажа анализировались путем открытого обсуждения с целью убедиться, что существующий план полета представляет собой наилучший вариант</label>
+                        <input id="critical_assessment_plans_landing" type="number" name="critical_assessment_plans_landing" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                        <label for="request_for_clarification_landing">ОБРАЩЕНИЯ ЗА ПОЯСНЕНИЯМИ<br>
+                            Члены экипажа задавали вопросы чтобы уяснить и/или уточнить план действий.<br>
+                            Члены экипажа не стеснялись проявить недостаток знаний,
+                            что выражается в их отношении кплану: «Ничего не принимать как само собой разумеющееся»
+                        </label>
+                        <input id="request_for_clarification_landing" type="number" name="request_for_clarification_landing" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                        <label for="conviction_landing">УБЕЖДЕННОСТЬ<br>
+                            Члены экипажа настаивали на своих критических замечаниях и/или выводах с достаточным упорством.<br>
+                            Члены экипажа высказывались без стеснения.
+                        </label>
+                        <input id="conviction_landing" type="number" name="conviction_landing" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+                    </div>
+                </div>
+
+
+                <button type="button" class="form-submit" onclick="saveStage(5)">Сохранить. Снижение. Заход на посадку. Посадка и руление (5)</button>
+        </div>
+
+<!-- Общая оценка -->
+
+        <div class="stage" data-stage="total_mark" id="total_mark">
+             <h3 class="stage-title">Оценка полета в целом</h3>
+
+            <div class="form-controls pilot-controls">
+                <div class="pilot-group">
+
+                    <h4>Форма записи фактов</h4>
+                    <label for="total_mark_facts">ИЗЛОЖЕНИЕ ФАКТОВ<br>
+                    Опишите Ваше общее впечатление о работе экипажа
+                    </label>
+                    <textarea id="total_mark_facts" class="facts" name="facts" required placeholder="Записать все что Вы считаете нужным"></textarea>
+
+                </div>
+        </div>
+
+                <div class="form-controls pilot-controls">
+                    <div class="pilot-group">
+
+                        <h4>Критерии оценок (баллы)</h4>
+                        <table class="responsive-table">
+                            <thead>
+                                <tr>
+                                    <th data-label="1">1</th>
+                                    <th data-label="2">2</th>
+                                    <th data-label="3">3</th>
+                                    <th data-label="4">4</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th>Плохо</th>
+                                    <th>Удовлетворительно</th>
+                                    <th>Хорошо</th>
+                                    <th>Отлично</th>
+                                </tr>
+                                <tr>
+                                    <td data-label="1">Действия экипажа содержали скрытую угрозу безопасности полета</td>
+                                    <td data-label="2">Действия экипажа можно считать адекватными</td>
+                                    <td data-label="3">Действия экипажа были эффективными</td>
+                                    <td data-label="4">Действия экипажа отличаются высокой эффективностью и заслуживают внимания как пример для распространения</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+
+                    </div>
+                </div>
+
+                <div class="form-controls pilot-controls">
+                    <div class="pilot-group">
+
+                        <h4>Качественная характеристика работы экипажа в целом</h4>
+                        <label for="clear_communication_mark">СВОБОДНОЕ ОБЩЕНИЕ<br> Создана и поддерживалась атмосфера свободного общения между членами экипажа.<br>
+                                Высокое качество общения современный, свободный, ясный обмен информацией
+                        </label>
+                        <input id="clear_communication_mark" type="number" name="clear_communication_mark" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                        <label for="captain_as_leader_mark">КВС КАК РУКОВОДИТЕЛЬ<br>
+                            Руководство действиями экипажа со стороны КВС было четким и координированным.<br>
+                            В форме команд, сообщений и принятых решениях, поощрений и поддержки действий членов экипажа
+                        </label>
+                        <input id="captain_as_leader_mark" type="number" name="captain_as_leader_mark" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                    </div>
+                </div>
+
+                <div class="form-controls pilot-controls">
+                    <div class="pilot-group">
+                        <div class="form-row">
+                            <label for="preflight_instructing_flight_attendants" class="form-label">Наблюдался ли инструктаж бортпроводников перед первым полетом
+                                с данным экипажем по выполняемому маршруту? (отметить один вариант)
+                            </label>
+                            <div class="form-controls">
+                                <select id="preflight_instructing_flight_attendants" name="preflight_instructing_flight_attendants" required>
+                                    <option value="">Выберите один вариант</option>
+                                    <option value="yes">Да</option>
+                                    <option value="no">Нет</option>
+                                    <option value="unknown">Не представилось возможности</option>
+
+                                </select>
+                            </div>
+
+                        <label for="preflight_instructing_flight_attendants_mark">
+                                Баллы за инструктаж
+                        </label>
+                        <input id="preflight_instructing_flight_attendants_mark" type="number" name="preflight_instructing_flight_attendants_mark" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="form-controls pilot-controls">
+                    <div class="pilot-group">
+
+                        <h4>Вклад в обеспечение эффективной работы экипажа</h4>
+                        <label for="capitain_contribution_effective_work">КВС
+                        </label>
+                        <input id="capitain_contribution_effective_work" type="number" name="capitain_contribution_effective_work" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                        <label for="copilot_contribution_effective_work">Второй пилот
+                        </label>
+                        <input id="copilot_contribution_effective_work" type="number" name="copilot_contribution_effective_work" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+
+                        <label for="overall_assessment_crew_performance">Общая оценка эффективности работы экипажа
+                        </label>
+                        <input id="overall_assessment_crew_performance" type="number" name="overall_assessment_crew_performance" min="1" step="1" max="4" required placeholder="Выбрать необходимые баллы от 1 до 4">
+
+                    </div>
+
+                </div>
+
+        <button type="button" class="form-submit" onclick="saveStage(6)">Сохранить общую оценку в целом(6)</button>
+        </div>
+
+<!-- Кнопка отправки всего отчёта -->
+<!-- <div style="text-align: center; margin: 40px 0;">
+    <button type="button" class="form-submit" onclick="submitAllStages()">
+        ✅ Отправить весь отчёт на сервер
+    </button>
+</div> -->
+    </div>
+</div>
+{% endblock %}

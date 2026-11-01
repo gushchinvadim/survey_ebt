@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+ {% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Мой сайт{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+<!-- Хедер -->
+<div class="header">
+    <!-- Все элементы — прямые дети .header и будут распределяться равномерно -->
+    <div class="header-logo">
+        <img src="{{ MEDIA_URL }}images/GVE_Dynamics_Main_Logo.png" alt="logo" class="logo">
+    </div>
+
+<h1 class="header-title">LOSA</h1>
+
+    <button class="burger-menu" aria-label="Меню">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+
+    <nav class="header-menu">
+        <ul class="header-link">
+            <li><a href="{% url 'index' %}">Главная</a></li>
+            <li><a href="{% url 'current_flight_data' %}">Заполнение полетных данных</a></li>
+            <li><a href="{% url 'mistake_control' %}">Контролирование ошибок</a></li>
+            <li><a href="{% url 'threatment_control' %}">Контролирование факторов угроз</a></li>
+                    {% if user.is_authenticated %}
+            <li><a href="{% url 'logout' %}" id="logout-btn">ВХОД</a></li>
+        {% else %}
+            <li><a href="{% url 'login' %}">Выход</a></li>
+        {% endif %}
+        {% if not is_home %}
+    <li><button type="button" class="form-submit" onclick="submitAllStages()">Отправить данные на сервер</button></li>
+    {% endif %}
+        </ul>
+    </nav>
+</div>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+   <div class="footer">
+        <nav>
+            <ul>
+              <li><a href="mailto:gvedynamics@gmail.com?subject=Информация с сайта LOSA"><img src="{{ MEDIA_URL }}images/mail_1.png" alt="Mail"></a></li>
+              <li><a href="#" target="_blank"><img src="{{ MEDIA_URL }}images/telegram-logo_white.png" alt="Telegram"></a></li>
+
+            </ul>
+        </nav>
+
+        <p class="copyright"><a href="http://gvedynamics.ru" target="_blank">&copy; GVE Dynamics 2025. Все права защищены.</a></p>
+   </div>
+   <button id="backToTop" class="back-to-top" aria-label="Вернуться наверх">
+    ↑
+</button>
+<script src="{% static 'js/script.js' %}"></script>
+
+</body>
+</html>

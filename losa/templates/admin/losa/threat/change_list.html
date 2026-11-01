@@ -1,0 +1,14 @@
+<!--losa/templates/admin/losa/threat/change_list.html-->
+
+{% extends "admin/change_list.html" %}
+
+{% block object-tools-items %}
+  {% if can_import %}
+    <li>
+      <a href="{% url 'admin:losa_threat_import_excel' %}">
+        Загрузить из Excel
+      </a>
+    </li>
+  {% endif %}
+  {{ block.super }}
+{% endblock %}

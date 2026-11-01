@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="stylesheet" href="login-form.css"> -->
+<style>
+    body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #031043 0%, #74bee8 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* Контейнер формы */
+.login-container {
+    width: 100%;
+    max-width: 400px;
+}
+
+/* Стиль самой формы */
+.login-form {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Заголовок */
+.form-title {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+/* Группа полей */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #555;
+    font-weight: 500;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+}
+
+.form-group input {
+    width: 90%;
+    padding: 12px 12px;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+/* Эффект при фокусе */
+.form-group input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Кнопка */
+.submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.3s;
+}
+
+.submit-btn:hover {
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    transform: translateY(-2px);
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+}
+</style>
+
+    <title>Login Form</title>
+</head>
+<body>
+    <div class="login-container">
+        <form class="login-form" id="loginForm">
+            <h2 class="form-title">ВХОД</h2>
+
+            <div class="form-group">
+                <label for="username">Логин</label>
+                <input type="text" id="username" placeholder="Введите логин" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" placeholder="Введите пароль" required>
+            </div>
+
+            <button type="submit" class="submit-btn">ENTER</button>
+        </form>
+    </div>
+
+<script>
+const form = document.getElementById("loginForm");
+
+form.addEventListener('submit', function(event){
+    event.preventDefault();
+
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+
+        // Проверка имени
+    if (username.length < 3) {
+        alert('Имя должно содержать минимум 3 символа');
+        return; // Прерываем выполнение
+    }
+
+    // Проверка пароля
+    if (password.length < 6) {
+        alert('Пароль должен содержать минимум 6 символов');
+        return;
+    }
+
+// Отправляем данные на сервер
+fetch('https://httpbin.org/post', { // ← Это тестовый сервер (можно заменить на свой)
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        username: username,
+        password: password,
+    })
+})
+.then(response => response.json()) // Получаем ответ в формате JSON
+.then(data => {
+    console.log('Успешный ответ от сервера:', data);
+    alert('Форма успешно отправлена! 🎉');
+        // Сохраняем факт успешного входа
+    localStorage.setItem('isLoggedIn', 'true');
+    window.location.href = 'http://127.0.0.1:5500/index.html';
+})
+.catch(error => {
+    console.error('Ошибка при отправке:', error);
+    alert('Произошла ошибка. Попробуйте позже.');
+});
+});
+
+
+</script>
+
+</body>
+</html>
