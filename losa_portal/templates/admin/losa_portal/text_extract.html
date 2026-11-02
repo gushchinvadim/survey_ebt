@@ -1,0 +1,26 @@
+{% extends "admin/base_site.html" %}{% load static %}
+{% block extrahead %}{{ block.super }}<link rel="stylesheet" href="{% static 'losa_portal/text_analysis.css' %}"><script src="{% static 'losa_portal/text_analysis.js' %}" defer></script>{% endblock %}
+{% block content %}
+<div class="ta-wrap">
+<p><a href="{% url 'admin:text-analysis-review' %}">Темы наблюдений</a> · <a href="{% url 'admin:losa_portal_textobservation_changelist' %}">Все карточки</a></p>
+<h2>{{ source.audit_sheet.audit_number }} · {{ source_label }}</h2>
+<p>Выделите точный фрагмент исходного текста и нажмите «Добавить выделенный фрагмент». Можно также скопировать цитату вручную. Исходный текст не изменяется.</p>
+<div class="ta-columns"><section class="ta-card"><h2>Изложение аудитора</h2>
+<div id="source-text" class="ta-source">{{ source_text }}</div>
+<button type="button" class="button" id="copy-selection">Добавить выделенный фрагмент ↓</button>
+<p id="selection-message" role="status"></p>
+<p class="help">Впечатления, причинные объяснения и оценки аудитора отмечайте отдельно от наблюдаемых действий.</p>
+</section>
+<section class="ta-card"><h2>Новое аналитическое наблюдение</h2>
+<form method="post">{% csrf_token %}{{ form.non_field_errors }}{{ form.source_digest }}
+{% for field in form.visible_fields %}<div class="ta-field">{{ field.label_tag }}{{ field.errors }}{{ field }}</div>{% endfor %}
+<p>Сохранение означает подтверждение координатором и включение фрагмента в сводку.</p>
+<button type="submit" class="default">Сохранить и включить в анализ</button>
+</form></section></div>
+<section class="ta-card"><h2>Наблюдения из этого текста</h2>
+{% for item in observations %}<article class="ta-case"><p><strong>{{ item.get_nature_display }}</strong> · {{ item.get_evidence_display }} · {{ item.get_status_display }}</p>
+<blockquote>{{ item.quote }}</blockquote><p>{% for topic in item.topics.all %}<span class="ta-tag">{{ topic }}</span>{% endfor %}</p>
+{% if item.source_changed %}<p class="ta-warning">Источник изменился после включения. Нужна сверка с сохранённым снимком.</p>{% endif %}
+<a href="{% url 'admin:losa_portal_textobservation_change' item.pk %}">Открыть карточку / уточнить разметку</a></article>
+{% empty %}<p>Фрагменты пока не включены.</p>{% endfor %}</section>
+</div>{% endblock %}

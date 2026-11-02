@@ -184,3 +184,140 @@ class AuditAssignment(models.Model):
             if kwargs.get("update_fields") is not None:
                 kwargs["update_fields"] = set(kwargs["update_fields"]) | {"number"}
             return super().save(*args, **kwargs)
+
+
+class ObservationTopic(models.Model):
+    name = models.CharField("Тема или подтема", max_length=160, unique=True)
+    parent = models.ForeignKey("self", verbose_name="Родительская тема", null=True, blank=True,
+                               on_delete=models.PROTECT, related_name="subtopics")
+
+    class Meta:
+        verbose_name = "Тема наблюдений"
+        verbose_name_plural = "Темы наблюдений"
+        ordering = ["name"]
+
+    def clean(self):
+        seen = {self.pk} if self.pk else set()
+        parent = self.parent
+        while parent:
+            if parent.pk in seen:
+                raise ValidationError({"parent": "Темы не должны образовывать цикл."})
+            seen.add(parent.pk)
+            parent = parent.parent
+
+    def __str__(self):
+        return self.name
+
+
+class TextObservation(models.Model):
+    NATURES = [("difficulty", "Затруднение"), ("practice", "Удачная практика"),
+               ("neutral", "Нейтральное наблюдение")]
+    EVIDENCE = [("fact", "Описание фактов или действий"), ("opinion", "Впечатление аудитора"),
+                ("mixed", "Факты и оценочное суждение")]
+    STATUSES = [("included", "Включено в анализ"), ("excluded", "Исключено из анализа")]
+    audit_sheet = models.ForeignKey("losa.AuditSheet", on_delete=models.PROTECT,
+                                    related_name="text_observations", verbose_name="Лист аудита")
+    assessment = models.ForeignKey("losa.AuditAssessment", on_delete=models.PROTECT,
+                                   null=True, blank=True, verbose_name="Изложение фактов по этапу")
+    final_mark = models.ForeignKey("losa.FinalMarkCrew", on_delete=models.PROTECT,
+                                   null=True, blank=True, verbose_name="Общее впечатление")
+    round_table_review = models.ForeignKey("SourceReview", on_delete=models.PROTECT,
+        null=True, blank=True, related_name="observations", verbose_name="Решение круглого стола")
+    source_snapshot = models.TextField("Текст источника при включении")
+    quote = models.TextField("Точная цитата")
+    topics = models.ManyToManyField(ObservationTopic, verbose_name="Темы / подтемы", related_name="observations")
+    nature = models.CharField("Характер", max_length=20, choices=NATURES)
+    evidence = models.CharField("Основание", max_length=20, choices=EVIDENCE)
+    note = models.TextField("Пояснение координатора", blank=True)
+    status = models.CharField("Участие в анализе", max_length=20, choices=STATUSES, default="included")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
+                                   related_name="created_text_observations", verbose_name="Кто включил")
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
+                                   related_name="updated_text_observations", verbose_name="Кто изменил")
+    created_at = models.DateTimeField("Создано", auto_now_add=True)
+    updated_at = models.DateTimeField("Изменено", auto_now=True)
+
+    class Meta:
+        verbose_name = "Аналитическое наблюдение"
+        verbose_name_plural = "Аналитические наблюдения"
+        ordering = ["-created_at", "-pk"]
+        constraints = [models.CheckConstraint(
+            condition=(models.Q(assessment__isnull=False, final_mark__isnull=True)
+                       | models.Q(assessment__isnull=True, final_mark__isnull=False)),
+            name="text_observation_exactly_one_source")]
+
+    @property
+    def current_source(self):
+        if self.round_table_review_id:
+            return self.round_table_review.agreed_text
+        return self.assessment.facts if self.assessment_id else self.final_mark.general_notes
+
+    @property
+    def source_changed(self):
+        return (self.current_source != self.source_snapshot or
+                bool(self.round_table_review_id and self.round_table_review.original_changed))
+
+    @property
+    def source_label(self):
+        return str(self.assessment.stage) if self.assessment_id else "Общее впечатление"
+
+    def clean(self):
+        if bool(self.assessment_id) == bool(self.final_mark_id):
+            raise ValidationError("Укажите один источник текста.")
+        source = self.assessment if self.assessment_id else self.final_mark
+        if source.audit_sheet_id != self.audit_sheet_id:
+            raise ValidationError("Источник должен принадлежать указанному листу.")
+        if self.round_table_review_id:
+            review = self.round_table_review
+            if review.assessment_id != self.assessment_id or review.final_mark_id != self.final_mark_id:
+                raise ValidationError("Карточка должна соответствовать источнику решения круглого стола.")
+        if not self.quote.strip() or self.quote not in self.source_snapshot:
+            raise ValidationError({"quote": "Цитата должна быть точным непустым фрагментом источника."})
+
+    def __str__(self):
+        return f"{self.audit_sheet.audit_number} / {self.source_label}: {self.quote[:70]}"
+
+
+class RoundTableCycle(models.Model):
+    name = models.CharField("Название цикла", max_length=200)
+    assignments = models.ManyToManyField(AuditAssignment, related_name="review_cycles", verbose_name="Проверки")
+    closed = models.BooleanField("Обсуждение завершено", default=False)
+    revision = models.PositiveIntegerField(default=0)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="round_table_cycles")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at', '-pk']
+        verbose_name = "Цикл круглого стола"
+        verbose_name_plural = "Циклы круглого стола"
+
+
+class SourceReview(models.Model):
+    DECISIONS = [('confirmed', 'Подтверждено без изменений'), ('revised', 'Уточнено по итогам обсуждения'),
+                 ('pending', 'Требует уточнения')]
+    cycle = models.ForeignKey(RoundTableCycle, on_delete=models.PROTECT, related_name="reviews")
+    assessment = models.ForeignKey('losa.AuditAssessment', on_delete=models.PROTECT, null=True, blank=True)
+    final_mark = models.ForeignKey('losa.FinalMarkCrew', on_delete=models.PROTECT, null=True, blank=True)
+    source_snapshot = models.TextField()
+    agreed_text = models.TextField(blank=True)
+    history = models.JSONField(default=list, blank=True)
+    decision = models.CharField(max_length=20, choices=DECISIONS)
+    note = models.TextField(blank=True)
+    revision = models.PositiveIntegerField(default=1)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def original_text(self):
+        return self.assessment.facts if self.assessment_id else self.final_mark.general_notes
+
+    @property
+    def original_changed(self):
+        return self.original_text != self.source_snapshot
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['cycle', 'assessment'], name='unique_cycle_assessment_review'),
+            models.UniqueConstraint(fields=['cycle', 'final_mark'], name='unique_cycle_final_review'),
+            models.CheckConstraint(condition=(models.Q(assessment__isnull=False, final_mark__isnull=True)
+                | models.Q(assessment__isnull=True, final_mark__isnull=False)), name='source_review_exactly_one_source')]

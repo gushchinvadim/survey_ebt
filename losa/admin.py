@@ -508,17 +508,27 @@ class AssessmentSectionAdmin(admin.ModelAdmin):
 
 @admin.register(AuditAssessment)
 class AuditAssessmentAdmin(admin.ModelAdmin):
-    list_display = ("audit_sheet", "stage")
+    @admin.display(description="Анализ текста")
+    def analysis_link(self, obj):
+        if not obj or not obj.pk:
+            return 'Сначала сохраните исходный текст.'
+        return format_html('<a href="{}">Разобрать для аналитики</a>',
+                           reverse('admin:text-analysis-stage', args=[obj.pk]))
+
+    readonly_fields = ("analysis_link",)
+    list_display = ("audit_sheet", "stage", "analysis_link")
     search_fields = ("audit_sheet__audit_number",)
     list_filter = ("stage",)
     list_select_related = ("audit_sheet", "stage")
-    fields = ("audit_sheet", "stage", "facts")
+    fields = ("audit_sheet", "stage", "facts", "analysis_link")
     autocomplete_fields = ("audit_sheet", "stage")
 
 
 class AuditAssessmentInline(admin.TabularInline):
+    analysis_link = AuditAssessmentAdmin.analysis_link
+    readonly_fields = ("analysis_link",)
     model = AuditAssessment
-    fields = ("stage", "facts")
+    fields = ("stage", "facts", "analysis_link")
     extra = 0
     show_change_link = True
 
@@ -613,6 +623,14 @@ class TypeApproachAndWeatherAdmin(admin.ModelAdmin):
 
 @admin.register(FinalMarkCrew)
 class FinalMarkCrewAdmin(admin.ModelAdmin):
+    @admin.display(description="Анализ текста")
+    def analysis_link(self, obj):
+        if not obj or not obj.pk:
+            return 'Сначала сохраните исходный текст.'
+        return format_html('<a href="{}">Разобрать для аналитики</a>',
+                           reverse('admin:text-analysis-final', args=[obj.pk]))
+
+    readonly_fields = ("analysis_link",)
     list_display = (
         "audit_sheet",
         "free_communication",
@@ -649,11 +667,13 @@ class FinalMarkCrewAdmin(admin.ModelAdmin):
             ),
         }),
         ("Общее впечатление", {
-            "fields": ("general_notes",),
+            "fields": ("general_notes", "analysis_link"),
         }),
     )
 
 class FinalMarkCrewInline(admin.StackedInline):
+    analysis_link = FinalMarkCrewAdmin.analysis_link
+    readonly_fields = ("analysis_link",)
     model = FinalMarkCrew
     extra = 1
     max_num = 1
@@ -672,7 +692,7 @@ class FinalMarkCrewInline(admin.StackedInline):
             ),
         }),
         ("Общее впечатление", {
-            "fields": ("general_notes",),
+            "fields": ("general_notes", "analysis_link"),
         }),
     )
 
@@ -1019,3 +1039,5 @@ class RolloutAndTaxingAndParkingAdmin(admin.ModelAdmin):
     )
     autocomplete_fields = ("audit_sheet",)
     list_select_related = ("audit_sheet",)
+
+from django.utils.html import format_html

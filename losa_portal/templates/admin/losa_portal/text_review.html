@@ -1,0 +1,21 @@
+{% extends "admin/base_site.html" %}{% load static %}
+{% block extrahead %}{{ block.super }}<link rel="stylesheet" href="{% static 'losa_portal/text_analysis.css' %}">{% endblock %}
+{% block content %}<div class="ta-wrap">
+<p><a href="{% url 'admin:losa_portal_textobservation_changelist' %}">Управление карточками</a> · <a href="{% url 'admin:losa_auditassessment_changelist' %}">Выбрать изложение фактов</a> · <a href="{% url 'admin:losa_portal_observationtopic_changelist' %}">Темы и подтемы</a></p>
+<p>Здесь только наблюдения, включённые координатором. Отсутствие упоминания не означает отсутствия проблемы. Затруднения и удачные практики могут встречаться в одном листе.</p>
+<form method="get" class="ta-card ta-filters">
+<label>Тема<select name="topic"><option value="">Все темы</option>{% for t in topics %}<option value="{{ t.pk }}" {% if topic == t.pk|stringformat:'s' %}selected{% endif %}>{{ t.name }}</option>{% endfor %}</select></label>
+<label>Характер<select name="nature"><option value="">Любой</option>{% for value,label in natures %}<option value="{{ value }}" {% if nature == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+<label>Этап<select name="stage"><option value="">Все этапы</option><option value="final" {% if stage == 'final' %}selected{% endif %}>Общее впечатление</option>{% for s in stages %}<option value="{{ s.pk }}" {% if stage == s.pk|stringformat:'s' %}selected{% endif %}>{{ s.name }}</option>{% endfor %}</select></label>
+<label>Поиск по цитате, пояснению или номеру<input name="q" value="{{ q }}"></label>
+<button type="submit" class="default">Найти случаи</button><a href="{% url 'admin:text-analysis-review' %}">Сбросить</a></form>
+<p><strong>Найдено: {{ event_count }} фрагментов в {{ filtered_sheets }} листах.</strong> Всего листов с включённым разбором: {{ total_sheets }}. Это не число всех проверок программы.</p>
+<section class="ta-card"><h2>Повторяющиеся темы</h2><p class="help">Считаем уникальные листы, а не число фраз. Проценты — от листов с включёнными наблюдениями в текущей выборке; это доля упоминаний. Строки тем отражают прямую разметку; фильтр родительской темы включает её подтемы.</p>
+<table><thead><tr><th>Тема</th><th>Листов / доля выборки</th><th>С затруднениями</th><th>С удачными практиками</th></tr></thead><tbody>{% for row in topic_rows %}<tr><td><a href="{% querystring topic=row.topic.pk page=None %}">{{ row.topic }}</a></td><td><strong>{{ row.percent }}%</strong> · {{ row.sheets }} из {{ filtered_sheets }}</td><td>{{ row.difficulties }}</td><td>{{ row.practices }}</td></tr>{% empty %}<tr><td colspan="4">Нет включённых наблюдений по выбранным условиям.</td></tr>{% endfor %}</tbody></table></section>
+<h2>Конкретные случаи</h2>
+{% for item in page_obj %}<article class="ta-card ta-case"><h3>{{ item.audit_sheet.audit_number }} · {{ item.source_label }}</h3><p>{{ item.audit_sheet.date|date:'d.m.Y' }} · {{ item.get_nature_display }} · {{ item.get_evidence_display }}</p>
+<blockquote>{{ item.quote }}</blockquote><p>{% for t in item.topics.all %}<span class="ta-tag">{{ t }}</span>{% endfor %}</p>{% if item.note %}<p><strong>Пояснение координатора:</strong> {{ item.note }}</p>{% endif %}
+{% if item.source_changed %}<p class="ta-warning">Источник изменён после разметки. Цитата приведена по сохранённому снимку; требуется сверка.</p>{% endif %}
+<p><a href="{% url 'admin:losa_portal_textobservation_change' item.pk %}">Карточка наблюдения</a> · {% if item.assessment_id %}<a href="{% url 'admin:text-analysis-stage' item.assessment_id %}">Полный исходный текст</a>{% else %}<a href="{% url 'admin:text-analysis-final' item.final_mark_id %}">Полный исходный текст</a>{% endif %}</p></article>{% endfor %}
+<p class="paginator">{% if page_obj.has_previous %}<a href="{% querystring page=page_obj.previous_page_number %}">← Назад</a>{% endif %} Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }} {% if page_obj.has_next %}<a href="{% querystring page=page_obj.next_page_number %}">Далее →</a>{% endif %}</p>
+</div>{% endblock %}

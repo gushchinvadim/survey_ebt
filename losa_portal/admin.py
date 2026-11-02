@@ -32,3 +32,6 @@ class AuditAssignmentAdmin(admin.ModelAdmin):
         if not change:
             obj.created_by = request.user
         super().save_model(request, obj, form, change)
+
+# Separate module keeps text analysis independent of scheduling and data capture.
+from . import text_admin  # noqa: F401,E402

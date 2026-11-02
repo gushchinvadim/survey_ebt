@@ -166,6 +166,11 @@ async function request(path, options = {}) {
 }
 
 export const api = {
+  async roundTable(path = "", method = "GET", data) {
+    if (config.demo) throw new Error("Круглый стол использует Django. Установите VITE_DEMO_MODE=false.");
+    if (method !== "GET") await request("/auth/csrf/");
+    return request(`/round-table/${path}`, { method, ...(data ? { body: JSON.stringify(data) } : {}) });
+  },
   async analytics(filters = {}) {
     if (config.demo) throw new Error("Аналитика использует сохранённые данные Django. Установите VITE_DEMO_MODE=false.");
     const query = new URLSearchParams(Object.entries(filters).filter(([, value]) => value !== ""));
