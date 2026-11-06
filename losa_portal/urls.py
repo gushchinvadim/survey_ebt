@@ -1,5 +1,5 @@
 from django.urls import path
-from . import round_table
+from . import round_table, reports
 from . import views
 from .analytics import analytics_view
 from . import demography, completion
@@ -7,6 +7,8 @@ from . import demography, completion
 app_name = "losa_portal"
 
 urlpatterns = [
+    path("round-table/<int:pk>/reports/", reports.reports_view, name="cycle-reports"),
+    path("round-table/<int:pk>/reports/<int:report_pk>/<str:kind>/", reports.download_view, name="cycle-report-download"),
     path("round-table/topics/", round_table.topic_view, name="round-table-topic"),
     path("round-table/", round_table.cycles_view, name="round-table-cycles"),
     path("round-table/<int:pk>/", round_table.cycle_view, name="round-table-cycle"),

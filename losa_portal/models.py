@@ -321,3 +321,16 @@ class SourceReview(models.Model):
             models.UniqueConstraint(fields=['cycle', 'final_mark'], name='unique_cycle_final_review'),
             models.CheckConstraint(condition=(models.Q(assessment__isnull=False, final_mark__isnull=True)
                 | models.Q(assessment__isnull=True, final_mark__isnull=False)), name='source_review_exactly_one_source')]
+
+
+class CycleReport(models.Model):
+    """Published, immutable input snapshot for a pair of cycle documents."""
+    cycle = models.ForeignKey(RoundTableCycle, on_delete=models.PROTECT, related_name='reports')
+    version = models.PositiveIntegerField()
+    payload = models.JSONField()
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-version']
+        constraints = [models.UniqueConstraint(fields=['cycle', 'version'], name='unique_cycle_report_version')]

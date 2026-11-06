@@ -166,6 +166,15 @@ async function request(path, options = {}) {
 }
 
 export const api = {
+  async downloadCycleReport(cycleId, reportId, kind) {
+    const response = await fetch(`${config.apiBase}/round-table/${cycleId}/reports/${reportId}/${kind}/`, {credentials: "include"});
+    if (!response.ok) throw new Error("Не удалось скачать PDF. Проверьте доступ и повторите попытку.");
+    const url = URL.createObjectURL(await response.blob());
+    const link = document.createElement("a");
+    link.href = url; link.download = `losa-${cycleId}-${reportId}-${kind}.pdf`;
+    document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  },
   async roundTable(path = "", method = "GET", data) {
     if (config.demo) throw new Error("Круглый стол использует Django. Установите VITE_DEMO_MODE=false.");
     if (method !== "GET") await request("/auth/csrf/");

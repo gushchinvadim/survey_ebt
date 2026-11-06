@@ -3,7 +3,7 @@ from uuid import NAMESPACE_URL, uuid5
 from rest_framework import serializers
 from losa.models import (
     AuditMistake, AuditThreat, AuditSafetyCondition, PhaseOfFlight,
-    Mistake, MistakeType, MistakeSection, Threat,
+    Mistake, MistakeType, MistakeSection, Threat, ChangingSafetyConditionSheet,
 )
 
 THREAT_FIELDS = (
@@ -96,6 +96,12 @@ def catalog(sheet):
         "people": list(AuditMistake.MISTAKE_RELAY_CHOICE),
         "reactions": list(AuditMistake.REACTION_CHOICE),
         "results": list(AuditMistake.ERROR_RESULT_CHOICE),
+        "safety_condition_definitions": list(
+            ChangingSafetyConditionSheet.objects.order_by("section", "code").values("id", "code", "section", "name")
+        ),
+        "safety_condition_sections": list(ChangingSafetyConditionSheet.SECTION_CHOICES),
+        "safety_condition_reactions": list(AuditSafetyCondition.REACTION_CHOICES),
+        "safety_condition_results": list(AuditSafetyCondition.RESULT_CHOICES),
         "safety_conditions": [
             {"id": row.pk, "label": f"{row.condition.code} — {row.condition.name}"}
             for row in AuditSafetyCondition.objects.filter(audit_sheet=sheet).select_related("condition")

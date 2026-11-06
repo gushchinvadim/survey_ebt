@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "./api";
 import "./round-table.css";
+import ReportPanel from "./ReportPanel";
 const decisions = {confirmed:"Подтверждено без изменений",revised:"Уточнено по итогам обсуждения",pending:"Требует уточнения",unreviewed:"Не обсуждалось"};
 const natures = {difficulty:"Затруднение",practice:"Удачная практика",neutral:"Нейтральное наблюдение"};
 const evidence = {fact:"Описание фактов или действий",opinion:"Впечатление аудитора",mixed:"Факты и оценочное суждение"};
@@ -20,19 +21,20 @@ function Cycles() {
  <div className="rt-candidates">{candidates.map(a=><label className="rt-check" key={a.id}><input type="checkbox" checked={selected.includes(a.id)} onChange={e=>setSelected(v=>e.target.checked?[...v,a.id]:v.filter(id=>id!==a.id))}/><span><strong>{a.number}</strong> · {a.date}<small>{a.aircraft} · {a.route}</small></span></label>)}{!candidates.length&&<p>Нет подходящих проверок.</p>}</div><button className="primary" disabled={busy||!selected.length||!name.trim()}>{busy?"Создаём…":"Создать цикл"}</button></form></section></div></section>;
 }
 function Cycle({id}) {
- const [data,setData]=useState(null),[error,setError]=useState(""),[selected,setSelected]=useState(""),[tab,setTab]=useState("review"),[busy,setBusy]=useState(false),[dirty,setDirty]=useState(false);
+ const [data,setData]=useState(null),[error,setError]=useState(""),[selected,setSelected]=useState(""),[tab,setTab]=useState("review"),[busy,setBusy]=useState(false),[dirty,setDirty]=useState(false),[reportDirty,setReportDirty]=useState(false);
  const [topic,setTopic]=useState(""),[nature,setNature]=useState(""),[search,setSearch]=useState("");
  const [newTopic,setNewTopic]=useState(""),[topicParent,setTopicParent]=useState("");
  async function load(){const d=await api.roundTable(`${id}/`);setData(d);setSelected(k=>k||d.sources[0]?.key||"");}
  useEffect(()=>{let active=true;api.roundTable(`${id}/`).then(d=>{if(active){setData(d);setSelected(d.sources[0]?.key||"");}}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[id]);
- useEffect(()=>{const guard=e=>{if(dirty){e.preventDefault();e.returnValue="";}};window.addEventListener("beforeunload",guard);return()=>window.removeEventListener("beforeunload",guard);},[dirty]);
- function mayLeave(){return !dirty||window.confirm("В форме есть несохранённые изменения. Перейти без сохранения?");}
+ useEffect(()=>{const guard=e=>{if(dirty||reportDirty){e.preventDefault();e.returnValue="";}};window.addEventListener("beforeunload",guard);return()=>window.removeEventListener("beforeunload",guard);},[dirty,reportDirty]);
+ function mayLeave(){return !(dirty||reportDirty)||window.confirm("В форме есть несохранённые изменения. Перейти без сохранения?");}
  async function createTopic(e){e.preventDefault();setBusy(true);setError("");try{await api.roundTable("topics/","POST",{name:newTopic,parent:topicParent?Number(topicParent):null});setNewTopic("");await load();}catch(e){setError(e.message);}finally{setBusy(false);}}
  async function toggle(){setBusy(true);setError("");try{await api.roundTable(`${id}/`,"POST",{closed:!data.cycle.closed,revision:data.cycle.revision});await load();}catch(e){setError(e.message);}finally{setBusy(false);}}
  const cases=data?.cases.filter(c=>(!topic||c.topics.includes(Number(topic)))&&(!nature||c.nature===nature)&&(!search||`${c.quote} ${c.note} ${c.number}`.toLowerCase().includes(search.toLowerCase())))||[];
  return <section className="page workspace rt-page"><a href="#round-table" className="back-link" onClick={e=>{if(!mayLeave())e.preventDefault();}}>← Все циклы</a><p className="eyebrow">Круглый стол · Координатор</p><h1>{data?.cycle.name||"Открываем цикл…"}</h1><ErrorBox error={error}/>{data&&<>
  <div className="rt-toolbar"><span><strong>{data.resolved} из {data.total}</strong> текстов согласовано · {data.sheets} проверок</span><button className="outline" disabled={busy||dirty||(!data.cycle.closed&&(!data.ready||data.stale_count>0))} onClick={toggle}>{data.cycle.closed?"Вернуть к обсуждению":"Завершить обсуждение"}</button></div>
  {data.cycle.closed&&<div className="notice">Обсуждение завершено. Решения и разметка доступны для просмотра.</div>}{data.sheets_without_texts>0&&<div className="notice">У {data.sheets_without_texts} проверок нет сохранённых текстов.</div>}{data.stale_count>0&&<div className="notice">Устаревших карточек: {data.stale_count}. Исключите их и при необходимости разметьте актуальную формулировку.</div>}
+ <ReportPanel key={id} cycle={data.cycle} onDirty={setReportDirty}/>
  <div className="rt-tabs"><button className={tab==="review"?"primary":"outline"} onClick={()=>setTab("review")}>Обсуждение текстов</button><button className={tab==="themes"?"primary":"outline"} onClick={()=>{if(mayLeave()){setDirty(false);setTab("themes");}}}>Темы и случаи</button></div>
  {tab==="review"?<div className="rt-review-layout"><aside className="rt-card rt-source-list"><h2>Проверки и этапы</h2>{data.sources.map(s=><button key={s.key} className={selected===s.key?"selected":""} onClick={()=>{if(mayLeave()){setDirty(false);setSelected(s.key);}}}><strong>{s.number}</strong><span>{s.stage}</span><small>{s.source_changed?"Источник изменён — сверить":decisions[s.decision]}</small></button>)}</aside>{selected?<SourcePanel key={selected+data.cycle.closed} cycleId={id} sourceKey={selected} topics={data.topics} onSaved={load} onDirty={setDirty}/>:<p>Нет сохранённых текстов.</p>}</div>:<>
  <section className="rt-card"><h2>Повторяющиеся темы</h2><p className="muted">Доля от {data.sheets} проверок цикла. До завершения разбора сводка предварительная. Один лист считается один раз в теме.</p><div className="rt-table-wrap"><table><thead><tr><th>Тема</th><th>Листы</th><th>Затруднения</th><th>Удачные практики</th></tr></thead><tbody>{data.summary.map(t=><tr key={t.id}><td><button className="text-button" onClick={()=>setTopic(String(t.id))}>{t.name}</button></td><td><strong>{t.percent}%</strong> · {t.sheets} из {data.sheets}</td><td>{t.difficulty}</td><td>{t.practice}</td></tr>)}</tbody></table></div>{!data.summary.length&&<p>Включите первые фрагменты после согласования текста.</p>}</section>

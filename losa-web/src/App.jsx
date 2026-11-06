@@ -1,4 +1,5 @@
 import RoundTable from "./RoundTable";
+import Reports from "./Reports";
 import Analytics from "./Analytics";
 import DemographyForm from "./DemographyForm";
 import { useEffect, useState } from "react";
@@ -138,7 +139,7 @@ export default function App() {
   const isWorkspace = user && route !== "home" && route !== "login";
   const authorized =
     user &&
-    ((route === "coordinator" || route === "analytics" || route.startsWith("round-table"))
+    ((route === "coordinator" || route === "analytics" || route.startsWith("round-table") || route === "reports" || /^reports\/\d+$/.test(route))
       ? user.roles.includes("coordinator")
       : user.roles.includes("auditor"));
   let content;
@@ -166,6 +167,8 @@ export default function App() {
     );
   else if ((route === "round-table" || /^round-table\/\d+$/.test(route)) && authorized)
     content = <RoundTable key={route} cycleId={route.split("/")[1]} />;
+  else if ((route === "reports" || /^reports\/\d+$/.test(route)) && authorized)
+    content = <Reports key={route} cycleId={route.split("/")[1]} />;
   else if (route === "analytics" && authorized)
     content = <Analytics key={user.id} />;
   else if (route.startsWith("audit/") && authorized)
@@ -211,7 +214,7 @@ export default function App() {
                 <button className="header-link" onClick={() => go("roles")}>
                   Рабочее пространство
                 </button>
-                {user.roles.includes("coordinator") && <><a className="header-link" href="#analytics">Аналитика</a><a className="header-link" href="#round-table">Круглый стол</a></>}
+                {user.roles.includes("coordinator") && <><a className="header-link" href="#analytics">Аналитика</a><a className="header-link" href="#round-table">Круглый стол</a><a className="header-link" href="#reports">Отчеты PDF</a></>}
                 <span className="user-name">
                   <span className="avatar">{user.name?.[0] || "Л"}</span>
                   {user.name}
@@ -610,6 +613,7 @@ function Workspace({ user, role }) {
           </button>
         )}
       </div>
+      {coordinator && <div className="rt-coordinator-documents"><div><strong>Итоговые документы LOSA</strong><p>Выберите цикл, подготовьте выводы и сформируйте PDF с диаграммами.</p></div><a className="primary" href="#reports">Сформировать отчет PDF →</a></div>}
       <div className="stats-grid">
         <div>
           <span>Всего назначений</span>

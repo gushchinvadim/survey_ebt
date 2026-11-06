@@ -292,10 +292,21 @@ def apply_locked_values(assignment, values):
 
 
 @never_cache
-@require_http_methods(["PUT"])
+@require_http_methods(["GET", "PUT"])
 @csrf_protect
 @portal_required
 def save_demography(request, pk):
+    if request.method == "GET":
+        with transaction.atomic():
+            assignment = locked_assignment(request.user, pk)
+            if not can_view(assignment, request.user):
+                return JsonResponse({"detail": "Нет доступа к этой проверке."}, status=403)
+            if not assignment.audit_sheet_id:
+                return JsonResponse({"detail": "Лист еще не открыт аудитором."}, status=404)
+            assignment.audit_sheet = AuditSheet.objects.select_for_update().get(
+                pk=assignment.audit_sheet_id
+            )
+            return JsonResponse(response_payload(assignment))
     from .views import read_json
     values, error = deserialize_values(read_json(request))
     if error is not None:

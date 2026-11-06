@@ -1,3 +1,4 @@
+from .admin_revision import AuditRevisionMixin
 from .models import (
     Aircraft,
     Airport,
@@ -507,7 +508,7 @@ class AssessmentSectionAdmin(admin.ModelAdmin):
 
 
 @admin.register(AuditAssessment)
-class AuditAssessmentAdmin(admin.ModelAdmin):
+class AuditAssessmentAdmin(AuditRevisionMixin, admin.ModelAdmin):
     @admin.display(description="Анализ текста")
     def analysis_link(self, obj):
         if not obj or not obj.pk:
@@ -614,7 +615,7 @@ class TypeApproachAndWeatherInline(admin.StackedInline):
     max_num = 1
 
 @admin.register(TypeApproachAndWeather)
-class TypeApproachAndWeatherAdmin(admin.ModelAdmin):
+class TypeApproachAndWeatherAdmin(AuditRevisionMixin, admin.ModelAdmin):
     list_display = ("audit_sheet", "approach_type", "visual_condition")
     search_fields = ("audit_sheet__audit_number",)
     list_filter = ("approach_type", "visual_condition")
@@ -622,7 +623,7 @@ class TypeApproachAndWeatherAdmin(admin.ModelAdmin):
     list_select_related = ("audit_sheet",)
 
 @admin.register(FinalMarkCrew)
-class FinalMarkCrewAdmin(admin.ModelAdmin):
+class FinalMarkCrewAdmin(AuditRevisionMixin, admin.ModelAdmin):
     @admin.display(description="Анализ текста")
     def analysis_link(self, obj):
         if not obj or not obj.pk:
@@ -726,7 +727,7 @@ class DescentApproachInline(admin.StackedInline):
     )
 
 @admin.register(DescentApproach)
-class DescentApproachAdmin(admin.ModelAdmin):
+class DescentApproachAdmin(AuditRevisionMixin, admin.ModelAdmin):
     list_display = (
         "id",
         "audit_sheet",
@@ -774,7 +775,7 @@ class RolloutAndTaxingAndParkingInline(admin.StackedInline):
     )
 
 @admin.register(AuditSheet)
-class AuditSheetAdmin(admin.ModelAdmin):
+class AuditSheetAdmin(AuditRevisionMixin, admin.ModelAdmin):
     list_display = (
         "id",
         "audit_number",
@@ -787,6 +788,10 @@ class AuditSheetAdmin(admin.ModelAdmin):
         "pilot_flying",
         "is_delay",
         "delay",
+    )
+    readonly_fields = (
+        "actual_departure",
+        "actual_arrival",
     )
     search_fields = (
         "audit_number",
@@ -847,13 +852,26 @@ class AuditSheetAdmin(admin.ModelAdmin):
         ),
         (
             "Маршрут и задержка",
-            {"fields": ("departure", "arrival", "is_delay", "delay")},
+            {
+                "fields": (
+                    "departure",
+                    "arrival",
+                    "actual_departure",
+                    "actual_arrival",
+                    "is_delay",
+                    "delay",
+                ),
+                "description": (
+                    "Первые два поля — исходный маршрут. "
+                    "Фактические аэропорты поступают из листа аудитора."
+                ),
+            },
         ),
     )
 
 
 @admin.register(AuditSafetyCondition)
-class AuditSafetyConditionAdmin(admin.ModelAdmin):
+class AuditSafetyConditionAdmin(AuditRevisionMixin, admin.ModelAdmin):
     form = AuditSafetyConditionForm
 
     list_display = (
@@ -905,7 +923,7 @@ class SafetyConditionExcelImportForm(forms.Form):
 
 
 @admin.register(AuditCriterionRating)
-class AuditCriterionRatingAdmin(admin.ModelAdmin):
+class AuditCriterionRatingAdmin(AuditRevisionMixin, admin.ModelAdmin):
     list_display = ("audit_sheet", "stage", "criterion", "score")
     search_fields = (
         "audit_sheet__audit_number",
@@ -919,7 +937,7 @@ class AuditCriterionRatingAdmin(admin.ModelAdmin):
 
 
 @admin.register(AuditMistake)
-class AuditMistakeAdmin(admin.ModelAdmin):
+class AuditMistakeAdmin(AuditRevisionMixin, admin.ModelAdmin):
     list_display = ("id", "audit_sheet", "mistake", "observed_at", "flight_phase")
     search_fields = (
         "audit_sheet__audit_number",
@@ -934,7 +952,7 @@ class AuditMistakeAdmin(admin.ModelAdmin):
 
 
 @admin.register(AuditThreat)
-class AuditThreatAdmin(admin.ModelAdmin):
+class AuditThreatAdmin(AuditRevisionMixin, admin.ModelAdmin):
     list_display = (
         "id",
         "audit_sheet",
@@ -980,7 +998,7 @@ class AssessmentCriterionAdmin(admin.ModelAdmin):
 
 
 @admin.register(StabilizedApproachAssessment)
-class StabilizedApproachAssessmentAdmin(admin.ModelAdmin):
+class StabilizedApproachAssessmentAdmin(AuditRevisionMixin, admin.ModelAdmin):
     list_display = (
         "id",
         "audit_sheet",
@@ -1000,7 +1018,7 @@ class StabilizedApproachAssessmentAdmin(admin.ModelAdmin):
     autocomplete_fields = ("audit_sheet",)
     list_select_related = ("audit_sheet",)
 @admin.register(Landing)
-class LandingAdmin(admin.ModelAdmin):
+class LandingAdmin(AuditRevisionMixin, admin.ModelAdmin):
     list_display = (
         "id",
         "audit_sheet",
@@ -1019,7 +1037,7 @@ class LandingAdmin(admin.ModelAdmin):
 
 
 @admin.register(RolloutAndTaxingAndParking)
-class RolloutAndTaxingAndParkingAdmin(admin.ModelAdmin):
+class RolloutAndTaxingAndParkingAdmin(AuditRevisionMixin, admin.ModelAdmin):
     list_display = (
         "id",
         "audit_sheet",

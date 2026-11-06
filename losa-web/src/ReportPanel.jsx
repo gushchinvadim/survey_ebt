@@ -1,0 +1,17 @@
+import {useEffect,useState} from "react";
+import {api} from "./api";
+const fields=[['summary','Краткие итоги','Основные результаты без рекомендаций',6000],['limitations','Ограничения данных','Охват выборки, пропуски, ограничения интерпретации',6000],['conclusions','Согласованные выводы и успешные практики','Выводы с основаниями: тема, количество наблюдений, что подтверждено',20000],['decisions','Решения круглого стола','Для каждого решения: связанный вывод, действие, ответственный, срок, критерий результата. Если решения не приняты, укажите это явно.',20000]];
+export default function ReportPanel({cycle,onDirty,expanded=false}) {
+ const [form,setForm]=useState({summary:"",conclusions:"",limitations:"",decisions:""}),[reports,setReports]=useState([]),[error,setError]=useState(""),[busy,setBusy]=useState(false),[checked,setChecked]=useState(false),[changed,setChanged]=useState(false),[ready,setReady]=useState(false);
+ useEffect(()=>{let active=true;api.roundTable(`${cycle.id}/reports/`).then(d=>{if(active){setReports(d.reports);if(d.latest)setForm(Object.fromEntries(fields.map(([k])=>[k,d.latest[k]||""])));setReady(true);}}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;onDirty(false);};},[cycle.id,onDirty]);
+ function update(key,value){setForm(f=>({...f,[key]:value}));setChanged(true);onDirty(true);setChecked(false);}
+ async function publish(e){e.preventDefault();setBusy(true);setError("");try{const r=await api.roundTable(`${cycle.id}/reports/`,"POST",{...form,revision:cycle.revision,anonymized:checked});setReports(v=>[r,...v]);setChanged(false);onDirty(false);setChecked(false);}catch(e){setError(e.message);}finally{setBusy(false);}}
+ async function download(r,kind){setBusy(true);setError("");try{await api.downloadCycleReport(cycle.id,r.id,kind);}catch(e){setError(e.message);}finally{setBusy(false);}}
+ const Container=expanded?"section":"details";
+ return <Container className="rt-card">{expanded?<h2>Подготовка и выпуск PDF</h2>:<summary>Итоговый отчет и решения · PDF</summary>}<p className="muted">Заполните тексты, завершите обсуждение и выпустите версию. Два PDF используют один сохраненный снимок данных. Повторный выпуск создает новую версию.</p>{error&&<div className="notice error" role="alert">{error}</div>}<form onSubmit={publish}>
+ {fields.map(([key,label,hint,max])=><label className="field" key={key}><span>{label}</span><small>{hint}</small><textarea required rows={4} maxLength={max} disabled={busy||!ready} value={form[key]} onChange={e=>update(key,e.target.value)}/></label>)}
+ <label className="rt-check"><input type="checkbox" checked={checked} onChange={e=>setChecked(e.target.checked)}/>Введенные тексты проверены: нет ФИО экипажей и деталей, позволяющих установить участников.</label>
+ {!cycle.closed&&<p className="muted">Выпуск станет доступен после завершения обсуждения. Тексты сохраняются только при выпуске версии.</p>}
+ <button className="primary" disabled={busy||!ready||!cycle.closed||!checked}>{busy?"Подождите…":"Сформировать отчет и решения PDF"}</button>{changed&&<p role="status">Есть несохраненные тексты. Они сохранятся при выпуске версии.</p>}</form>
+ {reports.map(r=><div className="rt-toolbar" key={r.id}><span>Версия {r.version} · {new Date(r.created_at).toLocaleString("ru-RU")}</span><button className="outline" disabled={busy} onClick={()=>download(r,"results")}>Отчет PDF</button><button className="outline" disabled={busy} onClick={()=>download(r,"decisions")}>Решения PDF</button></div>)}</Container>;
+}
