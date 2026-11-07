@@ -29,6 +29,25 @@ class RevisionFormMixin:
 
 
 class AuditRevisionMixin:
+    def _archived(self, ids):
+        from losa_portal.models import AuditAssignment
+        return AuditAssignment.objects.filter(audit_sheet_id__in=ids, archived_at__isnull=False).exists()
+
+    def has_change_permission(self, request, obj=None):
+        if obj is not None and self._archived(self._sheet_ids(self.get_queryset(request).filter(pk=obj.pk))):
+            return False
+        return super().has_change_permission(request, obj)
+
+    def has_delete_permission(self, request, obj=None):
+        if obj is not None and self._archived(self._sheet_ids(self.get_queryset(request).filter(pk=obj.pk))):
+            return False
+        return super().has_delete_permission(request, obj)
+
+    def _require_active(self, ids):
+        from django.core.exceptions import PermissionDenied
+        if self._archived(ids):
+            raise PermissionDenied("Архивные листы доступны только для просмотра. Сначала верните проверку из архива.")
+
     def get_form(self, request, obj=None, **kwargs):
         base = kwargs.pop('form', self.form)
         form = type('AuditRevisionForm', (RevisionFormMixin, base), {
@@ -68,6 +87,7 @@ class AuditRevisionMixin:
                 if selected and selected.isdecimal():
                     ids.add(int(selected))
             self._lock(ids)
+            self._require_active(ids)
             request._audit_revision_ids = ids
             return super().changeform_view(request, object_id, form_url, extra_context)
 
@@ -85,6 +105,7 @@ class AuditRevisionMixin:
         with transaction.atomic():
             ids = self._sheet_ids(self.get_queryset(request).filter(pk=object_id))
             self._lock(ids)
+            self._require_active(ids)
             return super().delete_view(request, object_id, extra_context)
 
     def delete_model(self, request, obj):
@@ -96,5 +117,6 @@ class AuditRevisionMixin:
         with transaction.atomic():
             ids = self._sheet_ids(queryset)
             self._lock(ids)
+            self._require_active(ids)
             super().delete_queryset(request, queryset)
             self._bump(ids)

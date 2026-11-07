@@ -51,6 +51,8 @@ def user_payload(user):
 
 
 def can_start(assignment, user):
+    if assignment.archived_at:
+        return False
     profile = profile_for(user)
     return bool(
         "auditor" in roles_for(user)
@@ -63,6 +65,8 @@ def can_start(assignment, user):
 
 
 def can_view(assignment, user):
+    if assignment.archived_at:
+        return False
     if can_start(assignment, user):
         return True
     profile = profile_for(user)
@@ -79,7 +83,7 @@ def can_view(assignment, user):
 def visible_assignments(user):
     from .models import AuditAssignment
 
-    queryset = AuditAssignment.objects.select_related("flight", "auditor")
+    queryset = AuditAssignment.objects.filter(archived_at__isnull=True).select_related("flight", "auditor")
     roles = roles_for(user)
     if "coordinator" in roles:
         return queryset

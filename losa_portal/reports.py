@@ -55,6 +55,8 @@ def reports_view(request, pk):
         if request.method == 'GET':
             return JsonResponse({'reports': [report_row(r) for r in cycle.reports.all()],
                                  'latest': cycle.reports.first().payload if cycle.reports.exists() else None})
+        if cycle.assignments.filter(archived_at__isnull=False).exists():
+            return JsonResponse({'detail': 'Проверки архивированы. Для нового выпуска сначала верните их из архива.'}, status=409)
         form = PublicationInput(data=read_json(request))
         if not form.is_valid():
             return JsonResponse({'detail': 'Заполните резюме, выводы, ограничения и решения.', 'errors': form.errors}, status=400)
@@ -65,6 +67,8 @@ def reports_view(request, pk):
             return JsonResponse({'detail': 'Проверьте обезличивание введённых текстов.'}, status=400)
         # Reuse the same eligibility rules and denominators as the coordinator screen.
         import json
+        from .archiving import locked_members
+        locked_members(cycle)
         state = json.loads(cycle_view(request_for_get(request), pk).content)
         if not state['ready'] or state['stale_count']:
             return JsonResponse({'detail': 'Состав цикла или карточки изменились. Проверьте цикл.'}, status=409)
@@ -78,6 +82,8 @@ def reports_view(request, pk):
                        texts=state['total'], cards=len(state['cases']), topics=state['summary'],
                        threats=event_summary(AuditThreat.objects.filter(audit_sheet_id__in=sheet_ids), 'threat'),
                        errors=event_summary(AuditMistake.objects.filter(audit_sheet_id__in=sheet_ids), 'mistake'))
+        from .archiving import archive_basis
+        payload['_archive_basis'] = archive_basis(cycle, state, events={'threats': payload['threats'], 'errors': payload['errors']})
         report = CycleReport.objects.create(cycle=cycle, version=version, payload=payload, created_by=request.user)
         return JsonResponse(report_row(report), status=201)
 

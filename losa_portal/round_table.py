@@ -52,13 +52,13 @@ def assignment_row(a):
 
 
 def eligible():
-    return AuditAssignment.objects.filter(status='completed', audit_sheet__isnull=False).select_related(
+    return AuditAssignment.objects.filter(status='completed', audit_sheet__isnull=False, archived_at__isnull=True).select_related(
         'audit_sheet__aircraft', 'audit_sheet__departure', 'audit_sheet__arrival')
 
 
 def cycle_row(c):
     return {'id': c.pk, 'name': c.name, 'closed': c.closed, 'revision': c.revision,
-            'count': c.assignments.count()}
+            'count': c.assignments.count(), 'archived_count': c.assignments.filter(archived_at__isnull=False).count()}
 
 
 @never_cache
@@ -117,12 +117,31 @@ def observation_row(o, review=None):
 
 
 @never_cache
-@require_http_methods(['GET', 'POST'])
+@require_http_methods(['GET', 'POST', 'DELETE'])
 @csrf_protect
 @coordinator_required
 def cycle_view(request, pk):
     with transaction.atomic():
-        c = get_object_or_404(RoundTableCycle.objects.select_for_update() if request.method == 'POST' else RoundTableCycle.objects, pk=pk)
+        c = get_object_or_404(RoundTableCycle.objects.select_for_update() if request.method in {'POST', 'DELETE'} else RoundTableCycle.objects, pk=pk)
+        if request.method == 'DELETE':
+            data = read_json(request) or {}
+            if (not isinstance(data, dict) or type(data.get('revision')) is not int
+                    or data['revision'] != c.revision or data.get('name') != c.name):
+                return failure('Подтверждение не совпадает или цикл изменён. Обновите страницу.', 409)
+            if c.reports.exists():
+                return failure('У цикла есть опубликованные отчеты. Такой цикл нельзя удалить.', 409)
+            if c.archived_assignments.exists():
+                return failure('По этому циклу проверки отправлены в архив. Удаление недоступно.', 409)
+            from django.contrib.admin.models import LogEntry, DELETION
+            from django.contrib.contenttypes.models import ContentType
+            LogEntry.objects.create(user=request.user,
+                content_type=ContentType.objects.get_for_model(c), object_id=str(c.pk),
+                object_repr=c.name[:200], action_flag=DELETION,
+                change_message='Координатор удалил ошибочный цикл, его решения и разметку. Проверки сохранены.')
+            TextObservation.objects.filter(round_table_review__cycle=c).delete()
+            c.reviews.all().delete()
+            c.delete()
+            return JsonResponse({'deleted': True})
         sources = source_data(c)
         reviews = list(c.reviews.select_related('assessment', 'final_mark', 'updated_by'))
         lookup = {f"{'stage' if r.assessment_id else 'final'}:{r.assessment_id or r.final_mark_id}": r for r in reviews}
@@ -147,6 +166,8 @@ def cycle_view(request, pk):
             if type(data.get('revision')) is not int or data['revision'] != c.revision:
                 return failure('Цикл изменён другим участником. Обновите страницу.',409)
             if type(data.get('closed')) is not bool: return failure('Укажите состояние цикла.')
+            if not data['closed'] and c.assignments.filter(archived_at__isnull=False).exists():
+                return failure('Сначала верните проверки из архива в админке координатора.',409)
             if data['closed'] and (not ready or stale_count):
                 return failure('Сначала согласуйте все сохранённые тексты, устраните устаревшие карточки и завершите проверки.')
             c.closed = data['closed']; c.revision += 1; c.save(update_fields=['closed','revision'])

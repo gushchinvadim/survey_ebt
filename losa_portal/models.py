@@ -84,6 +84,13 @@ class AuditAssignment(models.Model):
     opened_at = models.DateTimeField(
         "Начало заполнения", null=True, blank=True, editable=False
     )
+    archived_at = models.DateTimeField("Отправлено в архив", null=True, blank=True, db_index=True, editable=False)
+    archived_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
+        null=True, blank=True, related_name="archived_losa_assignments", verbose_name="Кто архивировал", editable=False)
+    archived_cycle = models.ForeignKey("RoundTableCycle", on_delete=models.PROTECT,
+        null=True, blank=True, related_name="archived_assignments", verbose_name="Цикл архивирования", editable=False)
+    archived_report = models.ForeignKey("CycleReport", on_delete=models.PROTECT,
+        null=True, blank=True, related_name="archived_assignments", verbose_name="Отчет при архивировании", editable=False)
     date = models.DateField("Дата проверки")
     flight = models.ForeignKey(
         Flight,
@@ -132,6 +139,12 @@ class AuditAssignment(models.Model):
                 fields=["date", "flight"], name="unique_portal_flight_date"
             ),
             models.CheckConstraint(
+                condition=(models.Q(archived_at__isnull=True, archived_by__isnull=True, archived_cycle__isnull=True, archived_report__isnull=True)
+                    | models.Q(archived_at__isnull=False, archived_by__isnull=False, archived_cycle__isnull=False,
+                               archived_report__isnull=False, status="completed")),
+                name="portal_archive_consistent",
+            ),
+            models.CheckConstraint(
                 condition=~models.Q(captain=models.F("first_officer")),
                 name="portal_different_pilots",
             ),
@@ -139,6 +152,8 @@ class AuditAssignment(models.Model):
 
     def clean(self):
         super().clean()
+        if self.archived_at and self.status != "completed":
+            raise ValidationError({"status": "Сначала верните проверку из архива действием координатора."})
         if self.captain_id and self.captain_id == self.first_officer_id:
             raise ValidationError(
                 {"first_officer": "КВС и второй пилот должны быть разными."}
