@@ -1,3 +1,4 @@
+import PlanningReferenceEditor from "./PlanningReferenceEditor";
 import RoundTable from "./RoundTable";
 import Reports from "./Reports";
 import Analytics from "./Analytics";
@@ -657,6 +658,7 @@ function Workspace({ user, role }) {
       {planner && catalog && (
         <Planner
           catalog={catalog}
+          onCatalogChange={setCatalog}
           today={today}
           onCancel={() => setPlanner(false)}
           onSave={async (data) => {
@@ -808,7 +810,8 @@ function Workspace({ user, role }) {
   );
 }
 
-function Planner({ catalog, today, onSave, onCancel }) {
+function Planner({ catalog, today, onSave, onCancel, onCatalogChange }) {
+  const [referenceBusy, setReferenceBusy] = useState(false);
   const [data, setData] = useState({
     date: today,
     flight: "",
@@ -822,6 +825,7 @@ function Planner({ catalog, today, onSave, onCancel }) {
     setData((current) => ({ ...current, [field]: value }));
   async function submit(e) {
     e.preventDefault();
+    if (referenceBusy) return;
     const payload = {
       ...data,
       flight: Number(data.flight),
@@ -854,6 +858,12 @@ function Planner({ catalog, today, onSave, onCancel }) {
           <p className="muted">Выберите рейс и участников наблюдения.</p>
         </div>
       </div>
+      <PlanningReferenceEditor onBusy={setReferenceBusy} onCreated={async (kind, id) => {
+        const updated = await api.catalog();
+        onCatalogChange(updated);
+        if (kind === "flights") change("flight", String(id));
+        if (kind === "auditors") change("auditor", String(id));
+      }}/>
       <div className="planner-grid">
         <Field label="Дата">
           <input
@@ -874,7 +884,7 @@ function Planner({ catalog, today, onSave, onCancel }) {
               .filter((f) => f.is_active !== false)
               .map((f) => (
                 <option key={f.id} value={f.id}>
-                  {f.number} · {f.departure} → {f.arrival} · {f.time}
+                  {f.number} · {f.departure} → {f.arrival} · {f.time} UTC
                 </option>
               ))}
           </select>
@@ -929,12 +939,12 @@ function Planner({ catalog, today, onSave, onCancel }) {
         <button
           type="button"
           className="outline"
-          disabled={busy}
+          disabled={busy || referenceBusy}
           onClick={onCancel}
         >
           Отмена
         </button>
-        <button className="primary" disabled={busy}>
+        <button className="primary" disabled={busy || referenceBusy}>
           {busy ? "Сохраняем…" : "Сохранить назначение"}
           <Icon size={17} />
         </button>

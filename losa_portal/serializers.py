@@ -6,6 +6,9 @@ from losa.models import Auditor, Pilot
 
 
 class AssignmentSerializer(serializers.ModelSerializer):
+    flight_number = serializers.CharField(source="flight.number", read_only=True)
+    planned_departure = serializers.CharField(source="flight.departure.airport_code", read_only=True)
+    planned_arrival = serializers.CharField(source="flight.arrival.airport_code", read_only=True)
     flight = serializers.PrimaryKeyRelatedField(
         queryset=Flight.objects.filter(is_active=True)
     )
@@ -30,6 +33,9 @@ class AssignmentSerializer(serializers.ModelSerializer):
             "id",
             "date",
             "flight",
+            "flight_number",
+            "planned_departure",
+            "planned_arrival",
             "captain",
             "first_officer",
             "auditor",

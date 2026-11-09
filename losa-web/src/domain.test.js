@@ -4,9 +4,10 @@ import { dateKey, canStart, validateAssignment } from "./domain.js";
 
 const user = { roles: ["auditor"], auditor_id: 2 };
 const assignment = { date: "2026-10-15", auditor: 2, status: "scheduled" };
-test("Moscow date changes before UTC midnight", () => {
-  assert.equal(dateKey(new Date("2026-10-14T21:01:00Z")), "2026-10-15");
-  assert.equal(dateKey(new Date("2026-10-14T20:59:00Z")), "2026-10-14");
+test("program date changes at UTC midnight", () => {
+  assert.equal(dateKey(new Date("2026-10-14T21:01:00Z")), "2026-10-14");
+  assert.equal(dateKey(new Date("2026-10-14T23:59:59Z")), "2026-10-14");
+  assert.equal(dateKey(new Date("2026-10-15T00:00:00Z")), "2026-10-15");
 });
 test("only assigned auditor can start on or after assignment date", () => {
   assert.equal(canStart(assignment, user, "2026-10-15"), true);

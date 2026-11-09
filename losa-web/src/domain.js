@@ -1,6 +1,6 @@
-export function dateKey(now = new Date(), timeZone = "Europe/Moscow") {
+export function dateKey(now = new Date()) {
   const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone,
+    timeZone: "UTC",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",

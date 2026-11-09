@@ -1,12 +1,13 @@
 from django.urls import path
 from . import round_table, reports, archiving
-from . import views
+from . import views, planning_catalog
 from .analytics import analytics_view
 from . import demography, completion, device_cleanup
 
 app_name = "losa_portal"
 
 urlpatterns = [
+    path("planning/references/<str:kind>/", planning_catalog.references_view, name="planning-reference"),
     path("round-table/<int:pk>/archive/", archiving.archive_cycle_view, name="cycle-archive"),
     path("device/cleanup/cycles/", device_cleanup.closed_cycles, name="device-cleanup-cycles"),
     path("device/cleanup/cycles/<int:pk>/", device_cleanup.manifest, name="device-cleanup-manifest"),

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   emptyJournal, newObservation, observationProblem, needsDetails,
-  putObservation, removeObservation, searchMistakes, searchThreats, toLocalTime,
+  putObservation, removeObservation, searchMistakes, searchThreats, toUTCTime,
 } from "./observation-data";
 
 function Choice({ label, value, choices, onChange }) {
@@ -187,7 +187,7 @@ export default function ObservationHub({
             <div className="observation-entry-meta">
               <span>{kind === "mistake" ? "Ошибка" : "Фактор угрозы"}</span>
               <span>{phases.find(p=>p.id===row.flight_phase)?.label || "Фаза не указана"}</span>
-              <time>{row.observed_at ? new Date(row.observed_at).toLocaleString("ru-RU") : "Без времени"}</time>
+              <time>{row.observed_at ? `${new Date(row.observed_at).toLocaleString("ru-RU", {timeZone: "UTC"})} UTC` : "Без времени"}</time>
             </div>
             <h3>{name(kind,row)}</h3>
             {row.comment && <p className="observation-entry-comment">{row.comment}</p>}
@@ -206,9 +206,9 @@ export default function ObservationHub({
         <div className="observation-two-columns">
           <Choice label="Фаза полёта *" value={event.flight_phase}
             choices={phases.map(p=>[p.id,p.label])} onChange={v=>update("flight_phase",v ? Number(v) : null)} />
-          <label className="field"><span>Время наблюдения (часовой пояс устройства)</span>
-            <input type="datetime-local" value={toLocalTime(event.observed_at)}
-              onChange={e=>update("observed_at",e.target.value ? new Date(e.target.value).toISOString() : null)} />
+          <label className="field"><span>Время наблюдения (UTC)</span>
+            <input type="datetime-local" value={toUTCTime(event.observed_at)}
+              onChange={e=>update("observed_at",e.target.value ? new Date(`${e.target.value}Z`).toISOString() : null)} />
           </label>
         </div>
         <small className="observation-help">Фаза предварительно выбрана по текущему блоку листа — уточните её при необходимости.</small>

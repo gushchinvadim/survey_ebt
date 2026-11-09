@@ -1,7 +1,7 @@
 export const config = {
   demo: import.meta.env.VITE_DEMO_MODE !== "false",
   apiBase: (import.meta.env.VITE_API_BASE || "/api").replace(/\/$/, ""),
-  timeZone: import.meta.env.VITE_PROGRAM_TIME_ZONE || "Europe/Moscow",
+  timeZone: "UTC",
   brand: import.meta.env.VITE_BRAND_NAME || "LOSA",
   version: "0.3.0",
   social: [

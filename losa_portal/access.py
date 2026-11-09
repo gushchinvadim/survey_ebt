@@ -1,7 +1,6 @@
 from functools import wraps
 from zoneinfo import ZoneInfo
 
-from django.conf import settings
 from django.http import JsonResponse
 from django.utils import timezone
 
@@ -30,7 +29,7 @@ def roles_for(user):
 
 def program_today():
     return timezone.localdate(
-        timezone=ZoneInfo(getattr(settings, "LOSA_TIME_ZONE", "Europe/Moscow"))
+        timezone=ZoneInfo("UTC")
     )
 
 
@@ -83,7 +82,7 @@ def can_view(assignment, user):
 def visible_assignments(user):
     from .models import AuditAssignment
 
-    queryset = AuditAssignment.objects.filter(archived_at__isnull=True).select_related("flight", "auditor")
+    queryset = AuditAssignment.objects.filter(archived_at__isnull=True).select_related("flight__departure", "flight__arrival", "auditor")
     roles = roles_for(user)
     if "coordinator" in roles:
         return queryset

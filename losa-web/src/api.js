@@ -255,6 +255,12 @@ export const api = {
     await request("/auth/csrf/");
     return request("/auth/logout/", { method: "POST" });
   },
+  async planningReference(kind, method = "GET", data) {
+    if (config.demo) throw new Error("Добавление справочников доступно при подключении к серверу.");
+    return request(`/planning/references/${encodeURIComponent(kind)}/`, {
+      method, ...(data === undefined ? {} : {body: JSON.stringify(data)}),
+    });
+  },
   async catalog() {
     return config.demo
       ? structuredClone(catalog)

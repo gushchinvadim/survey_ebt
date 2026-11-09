@@ -43,7 +43,7 @@ class Flight(models.Model):
         related_name="portal_arrival_flights",
         verbose_name="Аэропорт прилёта",
     )
-    time = models.TimeField("Время вылета по часовому поясу программы")
+    time = models.TimeField("Время вылета (UTC)")
     aircraft = models.ForeignKey(
         "losa.Aircraft",
         on_delete=models.PROTECT,
