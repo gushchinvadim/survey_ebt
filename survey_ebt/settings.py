@@ -111,11 +111,17 @@ USE_I18N = True
 
 USE_TZ = True
 
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://192.168.0.153:5173",
-]
+CSRF_TRUSTED_ORIGINS = config(
+    "CSRF_TRUSTED_ORIGINS",
+    default="http://localhost:5173,http://127.0.0.1:5173,http://192.168.0.153:5173",
+    cast=lambda value: [origin.strip() for origin in value.split(",") if origin.strip()],
+)
+
+BEHIND_HTTPS_PROXY = config("BEHIND_HTTPS_PROXY", default=False, cast=bool)
+if BEHIND_HTTPS_PROXY:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
